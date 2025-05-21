@@ -44,7 +44,7 @@ SOURCES :=  tolling-gnss-sm.c \
 
 SUBDIRS := #tolling-gnss-core
 
-CPPFLAGS += -DGNSS_TOLLING_CFG=tolling-pl.cfg
+CPPFLAGS += -DGNSS_TOLLING_CFG=tracking-application.cfg
 
 HAS_CUSTOM_CONFIG := true
 WITH_JSON_MAPPER := true
