@@ -155,7 +155,7 @@ void AxlesChangeManager_notify_axles_change(AxlesChangeManager *self, const guin
 		json_object_object_add(value, "axles", json_object_new_int(new_axles));
 		json_mapper_add_property(payload_mapper,(const guchar*)"value",json_type_object,(gpointer)value);
 
-		mqtt_client_publish_message_on_topic_from_param(self->data->mqtt_client,json_mapper_to_string_pretty(payload_mapper),MQTT_TOLLING_AXLES_CONFIGURATION_TOPIC_PAR);
+		//mqtt_client_publish_message_on_topic_from_param(self->data->mqtt_client,json_mapper_to_string_pretty(payload_mapper),MQTT_);
 
 	}
 }

@@ -25,7 +25,7 @@ void MessageComposer_send_message(MessageComposer *self, const GArray* fixes_to_
 	logdbg("MQTT message to send:\n%s", json_string->str);
 	//logdbg("Topic parameter: %s", MQTT_TOLLING_PL_POSDATA_TOPIC_PAR);
 
-	mqtt_client_publish_message_on_topic_from_param(self->tolling_gnss_sm_data->mqtt_client, json_string->str, MQTT_TOLLING_PL_POSDATA_TOPIC_PAR);
+	mqtt_client_publish_message_on_topic_from_param(self->tolling_gnss_sm_data->mqtt_client, json_string->str, MQTT_TRACKING_TOPIC_PAR);
 	g_string_free(json_string, TRUE);
 }
 
@@ -42,7 +42,7 @@ GString *MessageComposer_create_event_message(const MessageComposer *self, const
 
 	GString *json_string = g_string_new(json_mapper_to_string(payload_json_mapper));
 
-	mqtt_client_publish_message_on_topic_from_param(self->tolling_gnss_sm_data->mqtt_client, json_string->str, MQTT_TOLLING_PL_POSDATA_TOPIC_PAR);
+	mqtt_client_publish_message_on_topic_from_param(self->tolling_gnss_sm_data->mqtt_client, json_string->str, MQTT_TRACKING_TOPIC_PAR);
     g_string_free(json_string, TRUE);
 
 
@@ -59,7 +59,7 @@ GString *MessageComposer_create_event_message_pos(const MessageComposer *self, c
 	loginfo("\n %s",msg_type);
 	GString *json_string = g_string_new(json_mapper_to_string(payload_json_mapper));
 
-	mqtt_client_publish_message_on_topic_from_param(self->tolling_gnss_sm_data->mqtt_client, json_string->str, MQTT_TOLLING_PL_POSDATA_TOPIC_PAR);
+	mqtt_client_publish_message_on_topic_from_param(self->tolling_gnss_sm_data->mqtt_client, json_string->str, MQTT_TRACKING_TOPIC_PAR);
     g_string_free(json_string, TRUE);
 
 
