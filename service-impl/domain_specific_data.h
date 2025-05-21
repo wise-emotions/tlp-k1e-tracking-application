@@ -10,11 +10,13 @@
 
 #include <glib.h>
 
+typedef struct _ICustomActivationChecker ICustomActivationChecker;
 typedef struct _TollingGnssCoreFactoryInterface TollingGnssCoreFactoryInterface;
 
 typedef struct _DomainSpecificData {
 	const gchar *gnss_domain_name;
 	guint service_activation_domain_id;
+    ICustomActivationChecker *activation_checker;
 	TollingGnssCoreFactoryInterface *factory;
 } DomainSpecificData;
 

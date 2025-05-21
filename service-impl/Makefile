@@ -39,7 +39,8 @@ SOURCES :=  tolling-gnss-sm.c \
             tolling_application.c \
             service_configuration.c \
             application_message_composer.c \
-            application_gnss_fix_filter.c
+            application_gnss_fix_filter.c \
+            vas_activation_checker.c
 
 SUBDIRS := #tolling-gnss-core
 
@@ -59,6 +60,7 @@ SERVICE_IF_INC_PATH = ./tolling-gnss-core
 
 EXT_IF_LIBS :=  networkmanager \
                 positioning \
+                vasmanager \
                 tollingmanager \
                 iccif \
                 dsrc \
@@ -67,6 +69,7 @@ EXT_IF_LIBS :=  networkmanager \
 
 EXT_IF_LIBS_PATH := ../../network-manager/lib-$(ARCH) \
                     ../../positioning-service/lib-$(ARCH) \
+                    ../../vas-manager/lib-$(ARCH) \
                     ../../tolling-manager/lib-$(ARCH) \
                     ../../icc-service/lib-$(ARCH) \
                     ../../dsrc-service/lib-$(ARCH) \
@@ -77,6 +80,8 @@ EXT_IF_INC_PATH :=  ../../network-manager/generated \
                     ../../network-manager/include \
                     ../../positioning-service/generated \
                     ../../positioning-service/include \
+                    ../../vas-manager/generated \
+                    ../../vas-manager/include \
                     ../../tolling-manager/generated \
                     ../../tolling-manager/include \
                     ../../icc-service/generated \

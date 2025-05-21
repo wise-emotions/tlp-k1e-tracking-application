@@ -31,11 +31,13 @@ typedef struct _AlarmAndAlertNotificationFacade AlarmAndAlertNotificationFacade;
 typedef struct _GString GString;
 typedef struct _HmiProxy HmiProxy;
 typedef struct _DomainSpecificData DomainSpecificData;
+typedef struct _ICustomActivationChecker ICustomActivationChecker;
 typedef struct _TollingGnssCoreFactoryInterface TollingGnssCoreFactoryInterface;
 typedef struct _DsrcGoNogoStatus DsrcGoNogoStatus;
 
 typedef struct _Tolling_Gnss_Sm_Data
 {
+    ICustomActivationChecker        *activation_checker;
 	TollingGnssCoreFactoryInterface *factory;
 	TollingGnssSm                   *tolling_gnss_sm;
 	ServiceActivationSm             *service_activation_sm;

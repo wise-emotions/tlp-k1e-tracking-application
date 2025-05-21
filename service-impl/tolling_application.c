@@ -18,9 +18,11 @@
 #include "application_message_composer.h"
 #include "application_gnss_fix_filter.h"
 
+#include "vas_activation_checker.h"
+
 
 #define GNSS_DOMAIN_NAME "PL"
-#define GNSS_SERVICE_ACTIVATION_DOMAIN_ID 134
+#define GNSS_SERVICE_ACTIVATION_DOMAIN_ID 101
 //#define OTHER_SERVICE_ON_SHARED_DOMAIN 6
 
 // Polonia ETOLL: C_SER=73
@@ -56,10 +58,13 @@ static void obu_id_available_callback(Service* self)
 	gint other_service_on_shared_domain = OTHER_SERVICE_ON_SHARED_DOMAIN;
 	g_array_append_val(other_services_on_this_domain, other_service_on_shared_domain);
 	*/
+    VasActivationChecker *activation_checker = VasActivationChecker_new();
+    activation_checker->ctor(activation_checker, GNSS_SERVICE_ACTIVATION_DOMAIN_ID);
 
 	DomainSpecificData *domain_specific_data = g_malloc0(sizeof(DomainSpecificData));
 	domain_specific_data->gnss_domain_name             = GNSS_DOMAIN_NAME;
 	domain_specific_data->service_activation_domain_id = GNSS_SERVICE_ACTIVATION_DOMAIN_ID;
+	domain_specific_data->activation_checker           = (ICustomActivationChecker *)activation_checker;
 	self->c_data = Tolling_Gnss_Sm_Data_new(domain_specific_data);
 	g_free(domain_specific_data);
 	self->c_data->message_composer = ApplicationMessageComposer_new(self->c_data);
@@ -132,8 +137,10 @@ Service* service_new()
 int service_on_hold(Service* self)
 {
 	logdbg("");
-	if(self->c_data != NULL)
+	if(self->c_data != NULL){
 		tolling_gnss_sm_on_hold(self->c_data->tolling_gnss_sm);
+
+	}
 
 	return 0;
 }
@@ -141,6 +148,7 @@ int service_on_hold(Service* self)
 int service_resume(Service* self)
 {
 	logdbg("");
+	self->c_data->first_fix = FALSE;
 	if(self->c_data != NULL)
 		tolling_gnss_sm_run(self->c_data->tolling_gnss_sm);
 

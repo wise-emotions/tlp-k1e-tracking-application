@@ -7,7 +7,7 @@
 
 #include "logger.h"
 #include "resource_access_mediator.h"
-#include "../service_configuration.h"
+#include "service_configuration.h"
 
 #include "configuration_store.h"
 

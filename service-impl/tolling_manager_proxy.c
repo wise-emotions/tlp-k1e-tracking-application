@@ -12,6 +12,7 @@
 #include "tolling_gnss_sm_data.h"
 #include "axles_change_manager.h"
 #include "service_monitor.h"
+#include "icustom_activation_checker.h"
 
 #define FALLBACK_BLOCK_BEHAVIOUR       0
 #define FALLBACK_FILTER_DISTANCE       2.0
@@ -307,7 +308,12 @@ static gboolean TollingManagerProxy_get_activation_for_service(TollingManagerPro
 static void TollingManagerProxy_get_initial_service_activation(TollingManagerProxy *self)
 {
 	guint active;
-	gboolean result = TollingManagerProxy_get_activation_for_service(self, self->service_activation_domain_id, &active);
+	gboolean result;
+
+	if (!self->tolling_gnss_sm_data->activation_checker)
+        result = TollingManagerProxy_get_activation_for_service(self, self->service_activation_domain_id, &active);
+	else
+	    result = self->tolling_gnss_sm_data->activation_checker->get_service_activation(self->tolling_gnss_sm_data->activation_checker, &active);
 
 	if (result)
 	{
@@ -1317,11 +1323,6 @@ TollingManagerProxy *TollingManagerProxy_initialize(TollingManagerProxy *self,
 			self);
 		g_signal_connect(
 			self->dbus_proxy,
-			"service_activation_status_changed",
-			G_CALLBACK(TollingManagerProxy_on_service_activation_status_changed),
-			self);
-		g_signal_connect(
-			self->dbus_proxy,
 			"gnss_config_update",
 			G_CALLBACK(TollingManagerProxy_on_gnss_config_update),
 			self);
@@ -1350,6 +1351,21 @@ TollingManagerProxy *TollingManagerProxy_initialize(TollingManagerProxy *self,
 			"actual_current_weight_changed",
 			G_CALLBACK(TollingManagerProxy_on_current_actual_weight_changed),
 			self);
+
+        if (!self->tolling_gnss_sm_data->activation_checker) {
+            g_signal_connect(
+                self->dbus_proxy,
+                "service_activation_status_changed",
+                G_CALLBACK(TollingManagerProxy_on_service_activation_status_changed),
+                self);
+        }
+        else {
+            self->tolling_gnss_sm_data->activation_checker->set_service_activation_changed_callbak(
+                self->tolling_gnss_sm_data->activation_checker,
+                G_CALLBACK(TollingManagerProxy_on_service_activation_status_changed),
+                self
+            );
+        }
 	}
 	return self;
 }

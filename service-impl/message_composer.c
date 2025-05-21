@@ -18,6 +18,9 @@
 #include "gnss_fixes_transmission_queue.h"
 #include "service_monitor.h"
 
+#include "utils.h"
+#include "tolling_manager_proxy.h"
+
 MessageComposer* MessageComposer_new(Tolling_Gnss_Sm_Data* data)
 {
 	MessageComposer *self = g_new0(MessageComposer, 1);

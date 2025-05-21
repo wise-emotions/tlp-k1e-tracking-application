@@ -24,6 +24,7 @@
 #include "application_notifications.h"
 #include "alarm_and_alert_notification_facade.h"
 #include "events_logic.h"
+#include "icustom_activation_checker.h"
 
 #include "tolling_gnss_sm_data.h"
 #include "tolling_gnss_core_default_factory.h"
@@ -33,6 +34,7 @@ Tolling_Gnss_Sm_Data *Tolling_Gnss_Sm_Data_new(const DomainSpecificData *domain_
 	Tolling_Gnss_Sm_Data *self = g_try_new0(Tolling_Gnss_Sm_Data, 1);
 	g_return_val_if_fail(self != NULL, NULL);
 
+	self->activation_checker = domain_specific_data->activation_checker;
 	self->factory = domain_specific_data->factory;
 	if (self->factory == NULL)
 	{
@@ -127,6 +129,7 @@ void Tolling_Gnss_Sm_Data_destroy(Tolling_Gnss_Sm_Data *self)
 	if (self != NULL)
 	{
 		TollingManagerProxy_delete(self->tolling_manager_proxy);
+        if (self->activation_checker) self->activation_checker->dtor(self->activation_checker);
 		PositioningServiceProxy_destroy(self->positioning_service_proxy);
 		NetworkManagerProxy_destroy(self->network_manager_proxy);
 		IccServiceProxy_destroy(self->icc_service_proxy);

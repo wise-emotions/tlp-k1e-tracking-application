@@ -14,7 +14,7 @@
 #include "application_events.h"
 #include "application_events_common_names.h"
 #include "tolling_manager_proxy.h"
-#include "../service_configuration.h"
+#include "service_configuration.h"
 
 #include "axles_change_manager.h"
 
