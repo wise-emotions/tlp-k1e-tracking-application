@@ -21,7 +21,7 @@
 #include "vas_activation_checker.h"
 
 
-#define GNSS_DOMAIN_NAME "PL"
+#define GNSS_DOMAIN_NAME "TRACKING"
 #define GNSS_SERVICE_ACTIVATION_DOMAIN_ID 101
 //#define OTHER_SERVICE_ON_SHARED_DOMAIN 6
 
