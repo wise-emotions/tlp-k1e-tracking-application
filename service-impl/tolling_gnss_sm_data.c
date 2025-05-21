@@ -8,19 +8,14 @@
 
 #include "tolling-gnss-sm.h"
 #include "configuration_store.h"
-#include "odometer.h"
 #include "trip_id_manager.h"
 #include "gnss_fixes_transmission_queue.h"
-#include "data_id_generator.h"
 #include "domain_specific_data.h"
 
 #include "tolling_manager_proxy.h"
 #include "positioning_service_proxy.h"
 #include "network_manager_proxy.h"
-#include "icc_service_proxy.h"
-#include "dsrc_service_proxy.h"
 #include "application_events.h"
-#include "dsrc_go_nogo_status.h"
 #include "application_notifications.h"
 #include "alarm_and_alert_notification_facade.h"
 #include "events_logic.h"
@@ -78,16 +73,10 @@ Tolling_Gnss_Sm_Data *Tolling_Gnss_Sm_Data_new(const DomainSpecificData *domain_
 
 	self->configuration_store = ConfigurationStore_new();
 	self->application_events = ApplicationEvents_new();
-    self->dsrc_service_proxy = DsrcServiceProxy_new(
-        self->configuration_store,
-        self->application_events);
 	self->positioning_service_proxy = PositioningServiceProxy_new(
 		self->configuration_store,
 		self->application_events);
 	self->network_manager_proxy = NetworkManagerProxy_new(
-		self->configuration_store,
-		self->application_events);
-	self->icc_service_proxy = IccServiceProxy_new(
 		self->configuration_store,
 		self->application_events);
     self->tolling_manager_proxy = self->factory->create_tolling_manager_proxy(self->factory,
@@ -100,22 +89,14 @@ Tolling_Gnss_Sm_Data *Tolling_Gnss_Sm_Data_new(const DomainSpecificData *domain_
 	self->gnss_fixes_transmision_queue = GnssFixesTransmissionQueue_new();
 	self->gnss_fixes_transmision_queue->ctor(self->gnss_fixes_transmision_queue, self,domain_specific_data->gnss_domain_name); //NOTE: destructor called in MessageComposet_destroy()
 	self->gnss_fixes_transmision_queue->delayed_activation(self->gnss_fixes_transmision_queue);
-
-//	self->events_logic = self->factory->create_events_logic(self->factory,
-//		self->application_events,
-//		self->tolling_manager_proxy);
-	self->dsrc_go_nogo_status = DsrcGoNogoStatus_new(self->application_events, self->dsrc_service_proxy);
 	self->alarm_and_alert_notification_facade = AlarmAndAlertNotificationFacade_new(self->mqtt_client);
-	self->application_notifications = ApplicationNotifications_new(self->dsrc_go_nogo_status, self->alarm_and_alert_notification_facade);
+	self->application_notifications = ApplicationNotifications_new( self->alarm_and_alert_notification_facade);
 	self->events_logic = self->factory->create_events_logic(self->factory,
 		self->application_events,
 		self->tolling_manager_proxy,
 		self->application_notifications);
 
 	self->trip_id_manager = trip_id_manager_create();
-	self->data_id_generator = DataIdGenerator_new(self->configuration_store);
-	self->axles_change_manager = NULL;
-	self->odometer = odometer_new();
 	self->tolling_gnss_sm = tolling_gnss_sm_new(self);
 	self->obu_id = g_string_new("");
 
@@ -132,17 +113,12 @@ void Tolling_Gnss_Sm_Data_destroy(Tolling_Gnss_Sm_Data *self)
         if (self->activation_checker) self->activation_checker->dtor(self->activation_checker);
 		PositioningServiceProxy_destroy(self->positioning_service_proxy);
 		NetworkManagerProxy_destroy(self->network_manager_proxy);
-		IccServiceProxy_destroy(self->icc_service_proxy);
-		DsrcServiceProxy_destroy(self->dsrc_service_proxy);
 		ConfigurationStore_destroy(self->configuration_store);
 		ApplicationEvents_destroy(self->application_events);
 		ApplicationNotifications_destroy(self->application_notifications);
-		DsrcGoNogoStatus_destroy(self->dsrc_go_nogo_status);
 		AlarmAndAlertNotificationFacade_destroy(self->alarm_and_alert_notification_facade);
 		EventsLogic_delete(self->events_logic);
-		odometer_destroy(self->odometer);
 		trip_id_manager_destroy(self->trip_id_manager);
-		DataIdGenerator_destroy(self->data_id_generator);
 		mqtt_client_deinit(self->mqtt_client);
 		mqtt_client_destroy(self->mqtt_client);
 		tolling_gnss_sm_destroy(self->tolling_gnss_sm);

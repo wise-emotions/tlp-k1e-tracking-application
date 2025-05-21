@@ -54,7 +54,7 @@ static gboolean no_service_active(EventsLogic *self)
 
 static gboolean properly_configured(EventsLogic *self)
 {
-	return self->is_service_configured && self->is_vehicle_configured && self->is_axles_config_approved;
+	return self->is_service_configured && self->is_vehicle_configured;
 }
 
 static gboolean EventsLogic_service_active_inside_its_ccc_domain(EventsLogic *self) {
@@ -95,15 +95,13 @@ void EventsLogic_check_service_status(EventsLogic *self)
 {
 	loginfo(
 		"is_inside_gnss_domain = %d, is_inside_ccc_domain = %d, "
-		"is_service_active = %d, is_another_service_on_shared_domain_active = %d, "
-		"is_service_configured = %d, is_vehicle_configured  = %d, is_axles_config_approved = %d",
+		"is_service_active = %d, "
+		"is_service_configured = %d, is_vehicle_configured  = %d",
 		self->is_inside_gnss_domain,
 		self->is_inside_ccc_domain,
 		self->is_service_active,
-		self->is_another_service_on_shared_domain_active,
 		self->is_service_configured,
-		self->is_vehicle_configured,
-		self->is_axles_config_approved);
+		self->is_vehicle_configured);
 	return;
 }
 
@@ -432,26 +430,6 @@ static void EventsLogic_on_other_active_services_absent(gpointer gpointer_self)
 	return;
 }
 
-static void EventsLogic_clear_all_anomalies(EventsLogic *self)
-{
-	logdbg("");
-	if (self->is_network_anomaly_standing || self->is_gnss_anomaly_standing)
-	{
-		ApplicationEvents_emit_event(self->application_events, EVENT_EVENTS_LOGIC_GENERIC_ANOMALY_ABSENT);
-	}
-	if (self->is_network_anomaly_standing)
-	{
-		ApplicationEvents_emit_event(self->application_events, EVENT_EVENTS_LOGIC_NETWORK_ANOMALY_ABSENT);
-	}
-	if (self->is_gnss_anomaly_standing)
-	{
-		ApplicationEvents_emit_event(self->application_events, EVENT_EVENTS_LOGIC_GNSS_ANOMALY_ABSENT);
-	}
-	self->is_gnss_anomaly_standing = FALSE;
-	self->is_network_anomaly_standing = FALSE;
-	return;
-}
-
 static void EventsLogic_stop_all_anomaly_timers(EventsLogic *self)
 {
 	logdbg("");
@@ -476,7 +454,6 @@ void EventsLogic_on_exit_gnss_domain(gpointer gpointer_self)
 	// There should be no need to clear anomalies and stop timers here, as it's already done in function on_exit_ccc_domain;
 	// but if the OBU "teleports" outside of the polygons, it's possible this function is called before on_exit_ccc_domain,
 	// and that can lead to an inconsistency. Clearing everything here solves the problem.
-	EventsLogic_clear_all_anomalies(self);
 	EventsLogic_stop_all_anomaly_timers(self);
 	self->is_inside_gnss_domain = FALSE;
 	EventsLogic_update_service_status(self);
@@ -537,7 +514,6 @@ void EventsLogic_on_exit_ccc_domain(gpointer gpointer_self)
 {
 	logdbg("");
 	EventsLogic *self = (EventsLogic *)gpointer_self;
-	EventsLogic_clear_all_anomalies(self);
 	EventsLogic_stop_all_anomaly_timers(self);
 	self->is_inside_ccc_domain = FALSE;
 	EventsLogic_update_service_status(self);
@@ -574,33 +550,6 @@ void EventsLogic_on_tolling_gnss_sm_start(gpointer gpointer_self)
 	}
 	if (self->is_inside_ccc_domain)
 		EventsLogic_start_gnss_anomaly_timer(self);
-	return;
-}
-
-void EventsLogic_on_axles_change_requested(gpointer gpointer_self)
-{
-	logdbg("");
-	EventsLogic *self = (EventsLogic *)gpointer_self;
-	self->is_axles_config_approved = FALSE;
-	EventsLogic_update_service_status(self);
-	return;
-}
-
-void EventsLogic_on_axles_change_approved(gpointer gpointer_self)
-{
-	logdbg("");
-	EventsLogic *self = (EventsLogic *)gpointer_self;
-	self->is_axles_config_approved = TRUE;
-	EventsLogic_update_service_status(self);
-	return;
-}
-
-void EventsLogic_on_axles_change_rejected(gpointer gpointer_self)
-{
-	logdbg("");
-	EventsLogic *self = (EventsLogic *)gpointer_self;
-	self->is_axles_config_approved = FALSE;
-	EventsLogic_update_service_status(self);
 	return;
 }
 
@@ -703,23 +652,6 @@ EventsLogic *EventsLogic_initialize(EventsLogic *self,
         (ApplicationEvents_callback_type)EventsLogic_on_sm_on_hold,
         self);
 
-    ApplicationEvents_register_event(
-        self->application_events,
-        EVENT_TOLLING_GNSS_SM_ON_STOP,
-        (ApplicationEvents_callback_type)EventsLogic_clear_all_anomalies,
-        self);
-
-    ApplicationEvents_register_event_ex(
-        self->application_events,
-        EVENT_DSRC_SERVICE_PROXY_GO,
-        G_CALLBACK(EventsLogic_clean_up_managed_anomalies_set_by_others),
-        self, 1, G_TYPE_UINT);
-    ApplicationEvents_register_event_ex(
-        self->application_events,
-        EVENT_DSRC_SERVICE_PROXY_NOGO,
-        G_CALLBACK(EventsLogic_clean_up_managed_anomalies_set_by_others),
-        self, 1, G_TYPE_UINT);
-
 	ApplicationEvents_register_event(
 		self->application_events,
 		EVENT_POSITIONING_SERVICE_PROXY_POSITION_UPDATED,
@@ -794,21 +726,6 @@ EventsLogic *EventsLogic_initialize(EventsLogic *self,
 		self->application_events,
 		EVENT_TOLLING_GNSS_SM_ON_HOLD,
 		EventsLogic_on_tolling_gnss_sm_on_hold,
-		self);
-	ApplicationEvents_register_event(
-		self->application_events,
-		EVENT_AXLES_CHANGE_MANAGER_AXLES_CHANGE_REQUESTED,
-		EventsLogic_on_axles_change_requested,
-		self);
-	ApplicationEvents_register_event(
-		self->application_events,
-		EVENT_AXLES_CHANGE_MANAGER_AXLES_CHANGE_APPROVED,
-		EventsLogic_on_axles_change_approved,
-		self);
-	ApplicationEvents_register_event(
-		self->application_events,
-		EVENT_AXLES_CHANGE_MANAGER_AXLES_CHANGE_REJECTED,
-		EventsLogic_on_axles_change_rejected,
 		self);
 	return self;
 }

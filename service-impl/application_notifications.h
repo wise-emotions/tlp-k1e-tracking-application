@@ -3,12 +3,11 @@
 #include <glib.h>
 
 typedef struct _ApplicationNotifications ApplicationNotifications;
-typedef struct _DsrcGoNogoStatus DsrcGoNogoStatus;
 typedef struct _AlarmAndAlertNotificationFacade AlarmAndAlertNotificationFacade;
 
 void ApplicationNotifications_notify_no_go_service(ApplicationNotifications *self, gboolean is_active);
 void ApplicationNotifications_notify_anomaly_network(ApplicationNotifications *self, gboolean is_active);
 void ApplicationNotifications_notify_anomaly_gnss(ApplicationNotifications *self, gboolean is_active);
 
-ApplicationNotifications* ApplicationNotifications_new(DsrcGoNogoStatus *dsrc_go_nogo_status, AlarmAndAlertNotificationFacade *alarm_and_alert_notification_facade);
+ApplicationNotifications* ApplicationNotifications_new(AlarmAndAlertNotificationFacade *alarm_and_alert_notification_facade);
 void ApplicationNotifications_destroy(ApplicationNotifications *self);

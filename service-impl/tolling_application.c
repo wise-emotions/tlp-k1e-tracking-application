@@ -14,14 +14,14 @@
 #include "tolling_gnss_sm_data.h"
 #include "domain_specific_data.h"
 #include "tolling_manager_proxy.h"
-
 #include "application_message_composer.h"
 #include "application_gnss_fix_filter.h"
 
 #include "vas_activation_checker.h"
 
+typedef struct _PositionData PositionData;
 
-#define GNSS_DOMAIN_NAME "PL"
+#define GNSS_DOMAIN_NAME "TRACKING"
 #define GNSS_SERVICE_ACTIVATION_DOMAIN_ID 101
 //#define OTHER_SERVICE_ON_SHARED_DOMAIN 6
 

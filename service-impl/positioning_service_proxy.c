@@ -3,7 +3,7 @@
 
 #include "position.h"
 #include "positioning_service_types.h"
-
+#include  "gnss_fix_data.h"
 #include "logger.h"
 
 #include "configuration_store.h"
@@ -11,6 +11,9 @@
 #include "application_events_common_names.h"
 
 #include "positioning_service_proxy.h"
+
+#define MILLISECOND_TO_HOUR 0.000000277777778
+#define MAX_SPEED 			200.0
 
 typedef struct _PositioningServiceProxy
 {
@@ -85,14 +88,159 @@ static void PositioningServiceProxy_on_position_update(
 	self->current_position.speed = arg_speed;
 	self->current_position.accuracy = arg_accuracy;
 	strncpy(self->current_position.gps_time, arg_gps_time, DATE_TIME_LEN);
+
+
+	gdouble delta_time = -1;
+
+	if(self->current_position.latitude != 0.0){
+		delta_time = ((gdouble)arg_date_time- (gdouble)self->current_position.date_time) * MILLISECOND_TO_HOUR;
+	}
+
+	//aggiorno l'offset odometrico se
+	//     - in caso di primo fix, oppure
+	//     - se il delta_time = 0 -> se non è disponibile un nuovo fix, oppure
+	//     - se l'aggiornamento odometrico è maggiore del teorico percorso nell'intervallo di tempo a 200kmh
+	if( delta_time != -1 || (self->current_position.latitude != 0.0 && arg_total_dist - self->current_position.total_dist  < MAX_SPEED * delta_time) || delta_time == 0.0){
+
+		double update_km = arg_total_dist - self->current_position.total_dist;
+		logdbg("update km %f ",(arg_total_dist -  self->current_position.total_dist) );
+
+		if (update_km > 1.e-14) {
+			self->current_position.total_dist += update_km;
+		} else {
+			logdbg("Nothing to add, update is negative or too small");
+		}
+
+	} else {
+		logwarn("Received a diverged odometer update (total dist: %f km, previous total dist: %f km) from pos-srv, going to discard it",arg_total_dist, self->current_position.total_dist);
+	}
+
 	self->current_position.date_time = arg_date_time;
-	self->current_position.total_dist = arg_total_dist;
+
+
+
+
 	ApplicationEvents_emit_event(self->application_events, EVENT_POSITIONING_SERVICE_PROXY_POSITION_UPDATED);
 }
 
 PositionData *PositioningServiceProxy_get_current_position(PositioningServiceProxy *self)
 {
 	return &self->current_position;
+}
+
+
+PositionData PositioningServiceProxy_get_last_position(PositioningServiceProxy *self)
+{
+
+	GError *error = NULL;
+
+	gboolean result;
+	logdbg("calling position_call_get_last_position_sync");
+	error = NULL;
+	guint fix_validity;
+	guchar fix_type;
+	gdouble pdop;
+	gdouble hdop;
+	gdouble vdop;
+	gdouble altitude;
+	gdouble latitude;
+	gdouble longitude;
+	GVariant *sat_for_fix;
+	gdouble heading;
+	gdouble speed;
+	gdouble accuracy;
+	gchar *gps_time;
+	guint64 date_time;
+	gdouble total_dist;
+
+	PositionData fix;
+	memset(&fix, 0, sizeof(fix));
+	fix.sat_for_fix = g_array_sized_new(FALSE, TRUE, sizeof(gushort), MAX_SAT_FOR_FIX);
+    fix.gps_time[0] = '\0';
+
+	result = position_call_get_last_position_sync(self->dbus_proxy,
+				&fix_validity,
+				&fix_type,
+				&pdop,
+				&hdop,
+				&vdop,
+				&altitude,
+				&latitude,
+				&longitude,
+				&sat_for_fix,
+				&heading,
+				&speed,
+				&accuracy,
+				&gps_time,
+				&date_time,
+				&total_dist,
+				NULL,
+				&error);
+
+	if (result) {
+
+		fix.fix_validity = fix_validity;
+		fix.fix_type = fix_type;
+		fix.pdop = pdop;
+		fix.hdop = hdop;
+		fix.vdop = vdop;
+		fix.altitude = altitude;
+		fix.latitude = latitude;
+		fix.longitude = longitude;
+
+
+		// Read the satellite IDs from the GVariant, and append to the GArray those that are not 0
+		gsize sat_count;
+		const guchar *sat_array = (const guchar*)g_variant_get_fixed_array(sat_for_fix, &sat_count, sizeof(guchar));
+		//logdbg("The GVariant contains %u satellites", sat_count);
+		for (gsize sat_index = 0; sat_index < sat_count; sat_index++) {
+			if (sat_array[sat_index] != 0) {
+				gushort satellite_id = (gushort)(sat_array[sat_index]);
+				g_array_append_val(fix.sat_for_fix, satellite_id);
+
+				//logdbg("Appending satellite %u", satellite_id);
+			}
+		}
+
+		fix.heading = heading;
+		fix.speed = speed;
+		fix.accuracy = accuracy;
+		strncpy(fix.gps_time, gps_time, DATE_TIME_LEN);
+		fix.date_time = date_time;
+		fix.total_dist = total_dist;
+
+		g_variant_unref(sat_for_fix);
+		g_free(gps_time);
+
+	} else {
+
+		if (error != NULL) {
+			if (error->code == 2) {
+
+				fix = self->current_position;
+				logdbg("\terror: %d - %s", error->code, error->message);
+			} else {
+				logerr("\terror: %d - %s", error->code, error->message);
+			}
+			g_error_free(error);
+		} else {
+			logerr("Unknown error getting fix from Positioning service");
+		}
+
+	}
+
+	if(fix.latitude == 0 && fix.longitude == 0 ){
+
+		fix = self->current_position;
+
+	}
+
+	return fix;
+}
+
+PositionData PositioningServiceProxy_reset_last_pos_odom(PositioningServiceProxy *self){
+
+	self->current_position.total_dist = 0;
 }
 
 PositioningServiceProxy *PositioningServiceProxy_new(ConfigurationStore *configuration_store, ApplicationEvents *application_events)

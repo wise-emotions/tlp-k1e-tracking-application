@@ -40,7 +40,7 @@ JsonMapper *MessageComposer_create_payload(const MessageComposer *self, const gc
 {
 	JsonMapper *payload_json_mapper = json_mapper_create((const guchar*)"{}");
 
-	json_mapper_add_property(payload_json_mapper, (const guchar*)"trip_id",     json_type_string, (const gpointer) trip_id_manager_get_trip_id(self->tolling_gnss_sm_data->trip_id_manager)->str);
+	json_mapper_add_property(payload_json_mapper, (const guchar*)"tripId",     json_type_string, (const gpointer) trip_id_manager_get_trip_id(self->tolling_gnss_sm_data->trip_id_manager)->str);
 
 	json_mapper_add_property(payload_json_mapper, (const guchar*)"messageType",     json_type_string, (const gpointer) msg_type);
 
@@ -52,6 +52,8 @@ JsonMapper *MessageComposer_create_payload(const MessageComposer *self, const gc
 
 	GString *create_time = date_time_now_utc_to_iso8601(); // milliseconds
     json_mapper_add_property(payload_json_mapper, (const guchar*)"eventTimestamp",         json_type_string,   (const gpointer) create_time->str);
+
+    json_mapper_add_property(payload_json_mapper, (const guchar*)"messageTimestamp",        json_type_string,   (const gpointer) create_time->str);
 
 	return payload_json_mapper;
 }
@@ -84,35 +86,36 @@ JsonMapper *MessageComposer_create_fixdata_json_mapper_pos(PositionData fix)
 
 	JsonMapper *fixdata_json_mapper = json_mapper_create((const guchar*)"[]");
 
-	loginfo("fix lat %f",fix.latitude);
+	if(fix.latitude != 0 && fix.longitude != 0){
 
-	fix_data.latitude           = fix.latitude;
-	fix_data.longitude          = fix.longitude;
-	fix_data.altitude           = fix.altitude;
+		fix_data.latitude           = fix.latitude;
+		fix_data.longitude          = fix.longitude;
+		fix_data.altitude           = fix.altitude;
 
-	fix_data.fix_time_epoch     = fix.date_time;
-	fix_data.gps_speed          = fix.speed;
+		fix_data.fix_time_epoch     = fix.date_time;
+		fix_data.gps_speed          = fix.speed;
 
-	fix_data.gps_heading        = fix.heading;
-	fix_data.satellites_for_fix = fix.sat_for_fix->len;
+		fix_data.gps_heading        = fix.heading;
+		fix_data.satellites_for_fix = fix.sat_for_fix->len;
 
-	fix_data.hdop               = fix.hdop;
-	fix_data.total_distance_m   = fix.total_dist*1000;
+		fix_data.hdop               = fix.hdop;
+		fix_data.total_distance_km  = fix.total_dist;
 
-	JsonMapper *single_fix_json_mapper = gnss_fix_data_to_json_mapper(&fix_data);
-	json_mapper_add_mapper_to_array(fixdata_json_mapper, single_fix_json_mapper);
+		JsonMapper *single_fix_json_mapper = gnss_fix_data_to_json_mapper(&fix_data);
+		json_mapper_add_mapper_to_array(fixdata_json_mapper, single_fix_json_mapper);
 
-	json_mapper_destroy(single_fix_json_mapper);
+		json_mapper_destroy(single_fix_json_mapper);
 
 
-	//update monitor with latest nogo value
-	//if(fix_data != NULL)
-	service_monitor_update_metrics(&fix_data);
+		//update monitor with latest nogo value
+		//if(fix_data != NULL)
+		service_monitor_update_metrics(&fix_data);
+	}
 
 	return fixdata_json_mapper;
 }
 
-JsonMapper *MessageComposer_create_payload_json_mapper(MessageComposer *self, const GArray* fixes_to_send, const gchar* msg_type)
+JsonMapper *MessageComposer_create_payload_json_mapper(const MessageComposer *self, const GArray* fixes_to_send, const gchar* msg_type)
 {
 	//creating the message payload object with default properties
 	JsonMapper *payload_json_mapper = MessageComposer_create_payload(self, msg_type);
@@ -124,7 +127,7 @@ JsonMapper *MessageComposer_create_payload_json_mapper(MessageComposer *self, co
 	return payload_json_mapper;
 }
 
-JsonMapper *MessageComposer_create_payload_json_mapper_pos(MessageComposer *self, const PositionData fix, const gchar* msg_type)
+JsonMapper *MessageComposer_create_payload_json_mapper_pos(const MessageComposer *self, const PositionData fix, const gchar* msg_type)
 {
 	//creating the message payload object with default properties
 	JsonMapper *payload_json_mapper = MessageComposer_create_payload(self, msg_type);

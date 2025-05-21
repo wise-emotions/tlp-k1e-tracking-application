@@ -18,17 +18,18 @@ void add_custom_parameters()
 	sdv.sval = "";
 
 
+
 	Parameter* configuration_persistence_file = parameter_new(
 			CONFIGURATION_PERSISTENCE_PAR, "", "--configuration_persistence_file", pt_string,
 			CONFIGURATION_PERSISTENCE_RANGE, CONFIGURATION_PERSISTENCE_DESCR, sdv);
 
 	Parameter* mqtt_tolling_pl_topic = parameter_new(
-			MQTT_TOLLING_PL_POSDATA_TOPIC_PAR, "", "", pt_string,
-			MQTT_TOLLING_PL_POSDATA_TOPIC_PAR_RANGE, MQTT_TOLLING_PL_POSDATA_TOPIC_PAR_DESCR, sdv);
+			MQTT_TRACKING_TOPIC_PAR, "", "", pt_string,
+			MQTT_TRACKING_TOPIC_PAR_RANGE, MQTT_TRACKING_TOPIC_PAR_DESCR, sdv);
 
 	Parameter* mqtt_tolling_pl_axles_configuration_topic = parameter_new(
-				MQTT_TOLLING_AXLES_CONFIGURATION_TOPIC_PAR, "", "", pt_string,
-				MQTT_TOLLING_AXLES_CONFIGURATION_TOPIC_PAR_RANGE, MQTT_TOLLING_AXLES_CONFIGURATION_TOPIC_PAR_DESCR, sdv);
+			MQTT_EVENTS_TOPIC_PAR, "", "", pt_string,
+			MQTT_EVENTS_TOPIC_PAR_RANGE, MQTT_EVENTS_TOPIC_PAR_DESCR, sdv);
 
 	add_parameter(configuration_persistence_file);
 	add_parameter(mqtt_tolling_pl_topic);

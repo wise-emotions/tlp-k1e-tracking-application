@@ -8,9 +8,7 @@
 #include "configuration_store.h"
 #include "application_events.h"
 #include "application_events_common_names.h"
-#include "dsrc_go_nogo_status.h"
 #include "tolling_gnss_sm_data.h"
-#include "axles_change_manager.h"
 #include "service_monitor.h"
 #include "icustom_activation_checker.h"
 
@@ -660,10 +658,8 @@ static void TollingManagerProxy_get_initial_ccc_domains(TollingManagerProxy *sel
 					logdbg("Inside CCC domain %u", self->service_activation_domain_id);
 					local_domain_found = TRUE;
 
-					guint dsrc_flags = DsrcGoNogoStatus_get_current_dsrc_status_flags(self->tolling_gnss_sm_data->dsrc_go_nogo_status);
+					guint dsrc_flags = 0;
 					ApplicationEvents_emit_event_ex(self->application_events, EVENT_TOLLING_MANAGER_PROXY_ENTER_CCC_DOMAIN, dsrc_flags);
-					if(self->tolling_gnss_sm_data->axles_change_manager)
-						AxlesChangeManager_notify_last_axles_change(self->tolling_gnss_sm_data->axles_change_manager);
 
 					break;
 				}
@@ -697,14 +693,10 @@ void TollingManagerProxy_on_interface_available(
 {
 	logdbg("Interface '%s' is available from owner '%s'", name, name_owner);
 	TollingManagerProxy *self = (TollingManagerProxy*)gpointer_self;
-	TollingManagerProxy_get_initial_axles(self);
 	TollingManagerProxy_get_initial_vehicle_config(self);
 	TollingManagerProxy_get_initial_service_activation(self);
 	TollingManagerProxy_get_initial_activation_of_other_services(self);
 	TollingManagerProxy_get_initial_gnss_config(self);
-	TollingManagerProxy_get_initial_weight(self);
-	TollingManagerProxy_get_initial_actual_weight(self);
-	TollingManagerProxy_get_initial_trailer_type(self);
 	self->get_initial_gnss_domains(self);
 	TollingManagerProxy_get_initial_ccc_domains(self);
 
@@ -757,11 +749,8 @@ static void TollingManagerProxy_on_ccc_domain_enter(
 		if (domain_id_item == self->service_activation_domain_id)
 		{
 			logdbg("%d", domain_id_item);
-            guint dsrc_flags = DsrcGoNogoStatus_get_current_dsrc_status_flags(self->tolling_gnss_sm_data->dsrc_go_nogo_status);
+            guint dsrc_flags = 0;
 			ApplicationEvents_emit_event_ex(self->application_events, EVENT_TOLLING_MANAGER_PROXY_ENTER_CCC_DOMAIN, dsrc_flags);
-
-			if(self->tolling_gnss_sm_data->axles_change_manager)
-				AxlesChangeManager_notify_last_axles_change(self->tolling_gnss_sm_data->axles_change_manager);
 
 			break;
 		}
@@ -807,12 +796,6 @@ static void TollingManagerProxy_on_service_activation_status_changed(
 		else
 		{
 			ApplicationEvents_emit_event(self->application_events, EVENT_TOLLING_MANAGER_PROXY_SERVICE_ACTIVATED_FROM_REMOTE);
-
-			if (self->tolling_gnss_sm_data->axles_change_manager)
-			{
-				AxlesChangeManager_notify_last_axles_change(self->tolling_gnss_sm_data->axles_change_manager);
-				logdbg("Notifying axles change to AxlesChangeManager");
-			}
 
 
 		}
@@ -923,12 +906,6 @@ static void TollingManagerProxy_on_current_axles_changed(
 	loginfo("new_axles = %u, trn_id = %s", new_axles, trn_id);
 
 	TollingManagerProxy_set_current_trailer_axles(self, new_axles);
-
-	if (self->tolling_gnss_sm_data->axles_change_manager)
-	{
-		logdbg("Notifying axles change to AxlesChangeManager");
-		AxlesChangeManager_axles_change_requested(self->tolling_gnss_sm_data->axles_change_manager, new_axles, trn_id);
-	}
 
 	return;
 }

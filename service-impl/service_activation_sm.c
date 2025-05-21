@@ -17,7 +17,6 @@
 #include "gnss_fixes_transmission_queue.h"
 #include "gnss_fix_filter.h"
 #include "tolling_gnss_sm_data.h"
-#include "odometer.h"
 #include "trip_id_manager.h"
 #include "network_manager_proxy.h"
 #include "application_notifications.h"
@@ -136,8 +135,6 @@ void service_activation_enter_state_active(ServiceActivationSm* self)
 {
 	logdbg("Service activation enter state active");
 	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
-	odometer_reset(curr_state_data->odometer);
-	trip_id_manager_generate_trip_id(curr_state_data->trip_id_manager,	curr_state_data->obu_id);
 
 	GnssFixFilter_reset_last_fix(curr_state_data->gnss_fix_filter);
 
@@ -204,7 +201,6 @@ void service_activation_position_updated_not_implemented(ServiceActivationSm *se
 void service_activation_position_updated(ServiceActivationSm *self, const PositionData *position)
 {
 	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
-	odometer_position_received(curr_state_data->odometer, position);
 	GnssFixesTrasmissionQueue *txq = curr_state_data->gnss_fixes_transmision_queue;
 	txq->push(txq, position);
 }

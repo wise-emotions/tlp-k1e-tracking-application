@@ -26,7 +26,7 @@ void MessageComposer_destroy(MessageComposer *self);
 
 JsonMapper *MessageComposer_create_payload(const MessageComposer *self, const gchar* msg_type);
 JsonMapper *MessageComposer_create_fixdata_json_mapper(const GArray* fixes_to_send);
-JsonMapper *MessageComposer_create_payload_json_mapper(MessageComposer *self, const GArray* fixes_to_send, const gchar* msg_type);
+JsonMapper *MessageComposer_create_payload_json_mapper(const MessageComposer *self, const GArray* fixes_to_send, const gchar* msg_type);
 GString    *MessageComposer_create_message_from_fixes(MessageComposer *self, const GArray* fixes_to_send);
 GString *MessageComposer_create_event_message_pos(const MessageComposer *self, const PositionData fix, const gchar* msg_type);
 

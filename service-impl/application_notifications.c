@@ -4,9 +4,6 @@
 #include "logger.h"
 #include "hmi_proxy.h"
 #include "alarm_and_alert_notification_facade.h"
-
-#include "dsrc_go_nogo_status.h"
-
 #include "application_notifications.h"
 
 #define APPLICATION_NOTIFICATIONS_NO_GO_SERVICE_KEY "tolling_gnss_notification_service_go"
@@ -22,7 +19,6 @@ struct _ApplicationNotifications
 {
 	HmiProxy* hmi_proxy;
 	AlarmAndAlertNotificationFacade *alarm_and_alert_notification_facade;
-	DsrcGoNogoStatus *dsrc_go_nogo_status;
 };
 
 static void ApplicationNotifications_install_audio_pattern_for_resource_id(ApplicationNotifications *self, char *resource_id)
@@ -65,27 +61,23 @@ void ApplicationNotifications_notify_no_go_service(ApplicationNotifications *sel
 	} else {
 		g_timeout_add(RAISE_SERVICE_ANOMALY_DELAY_IN_MILLISECONDS, ApplicationNotifications_raise_service_anomaly, self);
 	}
-	DsrcGoNogoStatus_set_app_no_go_service(self->dsrc_go_nogo_status, is_active);
 }
 
 void ApplicationNotifications_notify_anomaly_network(ApplicationNotifications *self, gboolean is_active)
 {
 	ApplicationNotifications_notify_with_facade(self, APPLICATION_NOTIFICATIONS_NO_GO_NETWORK_KEY, is_active);
-	DsrcGoNogoStatus_set_app_no_go_network(self->dsrc_go_nogo_status, is_active);
 }
 
 void ApplicationNotifications_notify_anomaly_gnss(ApplicationNotifications *self, gboolean is_active)
 {
 	ApplicationNotifications_notify_with_facade(self, APPLICATION_NOTIFICATIONS_NO_GO_GNSS_KEY, is_active);
-	DsrcGoNogoStatus_set_app_no_go_gnss(self->dsrc_go_nogo_status, is_active);
 }
 
-ApplicationNotifications *ApplicationNotifications_new(DsrcGoNogoStatus *dsrc_go_nogo_status, AlarmAndAlertNotificationFacade *alarm_and_alert_notification_facade)
+ApplicationNotifications *ApplicationNotifications_new(AlarmAndAlertNotificationFacade *alarm_and_alert_notification_facade)
 {
 	loginfo("");
 	ApplicationNotifications *self = g_try_new0(ApplicationNotifications, 1);
 	g_return_val_if_fail(self != NULL, NULL);
-	self->dsrc_go_nogo_status = dsrc_go_nogo_status;
 	self->alarm_and_alert_notification_facade = alarm_and_alert_notification_facade;
 	self->hmi_proxy = hmi_proxy_create(self);
 	ApplicationNotifications_install_audio_pattern_for_resource_id(

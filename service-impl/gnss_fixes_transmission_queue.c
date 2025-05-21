@@ -12,7 +12,6 @@
 #include "application_events.h"
 #include "application_events_common_names.h"
 #include "resource_access_mediator.h"
-#include "fix_and_status.h"
 #include "openssl/md5.h"
 #include <string.h>
 
@@ -240,9 +239,6 @@ GnssFixesTransmissionQueue_push(
         GnssFixFilter_set_last_fix(self->priv->context->gnss_fix_filter, fix_data);
 
         if (g_queue_get_length(self->priv->txq) < self->priv->max_queue_size) {
-
-            //data_id is generated only if current fix has to be really buffered
-            gnss_fix_data_fill_data_id(fix_data, self->priv->context);
 
             g_queue_push_head(self->priv->txq,fix_data);
 
@@ -547,8 +543,6 @@ static gboolean GnssFixesTransmissionQueue_fix_writer(GnssFixesTransmissionQueue
 		//Writing Nth fix struct
 		CHECK_LEN_WRITE_DIGEST(fix,GnssFixData,1,to_write,closing,&md5_context);
 		//Writing Nth fix and status of the fix struct (Note that the fix and status will always be there because the new of the GNSSFixData always allocate it)
-		CHECK_LEN_WRITE_DIGEST(fix->fix_and_status,FixAndStatus,1,to_write,closing,&md5_context);
-
 		if(fix->data_id != NULL && fix->data_id->len>0){
 			//Writing string len is the size of the string withouth the null terminated. Remember to add that when reading
 			CHECK_LEN_WRITE_DIGEST(&fix->data_id->len,gsize,1,to_write,closing,&md5_context);
@@ -591,7 +585,6 @@ static gboolean GnssFixesTransimissionQueue_fix_reader(GnssFixesTransmissionQueu
 	gchar *resource_id_hash = resource_id_hash_str->str;
 	gboolean return_value = FALSE;
 	GnssFixData *fix_Data = NULL;
-//	FixAndStatus *fix_and_status = NULL;
 	//TODO: check if the file exists
 	FILE *to_read = rm_get_resource_as_file(RM_FIXES_PATH, resource_id,"r");
 	FILE *to_read_hash = rm_get_resource_as_file(RM_FIXES_PATH, resource_id_hash,"r");
@@ -627,12 +620,9 @@ static gboolean GnssFixesTransimissionQueue_fix_reader(GnssFixesTransmissionQueu
 	gchar data_id[200];
 	for (int i=0;i<num_fixes;i++){
 		fix_Data = gnss_fix_data_new();
-		FixAndStatus *fix_and_status = fix_Data->fix_and_status;
 		GString *fix_data_id = fix_Data->data_id;
 		CHECK_LEN_READ_DIGEST(fix_Data,GnssFixData,1,to_read,closing,&md5_context);
-		fix_Data->fix_and_status = fix_and_status;
 		fix_Data->data_id = fix_data_id;
-		CHECK_LEN_READ_DIGEST(fix_Data->fix_and_status,FixAndStatus,1,to_read,closing,&md5_context);
 
 		gsize string_len = 0;
 		CHECK_LEN_READ_DIGEST(&string_len,gsize,1,to_read,closing,&md5_context);

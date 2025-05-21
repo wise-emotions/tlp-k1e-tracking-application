@@ -19,7 +19,8 @@
 #include "application_notifications.h"
 #include "service_monitor.h"
 #include "connection_sm.h"
-#include "axles_change_manager.h"
+#include "trip_id_manager.h"
+#include "message_composer.h"
 
 #include "tolling-gnss-sm.h"
 
@@ -110,20 +111,26 @@ void tolling_gnss_exit_state_on_hold(TollingGnssSm* self)
 void tolling_gnss_enter_state_running(TollingGnssSm* self)
 {
 	logdbg("Tolling GNSS enter state running");
-
+	loginfo("***** TRACKING APPLICATION START *****");
     Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	ApplicationEvents_emit_event(curr_state_data->application_events, EVENT_TOLLING_GNSS_SM_START);
     service_activation_sm_start(curr_state_data->service_activation_sm);
-	if(curr_state_data->axles_change_manager)
-		AxlesChangeManager_notify_last_axles_change(curr_state_data->axles_change_manager);
+	trip_id_manager_generate_trip_id(curr_state_data->trip_id_manager,	curr_state_data->obu_id);
+
+	PositionData position = PositioningServiceProxy_get_last_position(curr_state_data->positioning_service_proxy);
+
+	//invio messaggio start
+	if(curr_state_data->first_fix == FALSE){
+		position.total_dist = 0.0;
+ 	    MessageComposer_create_event_message_pos(curr_state_data->message_composer, position,"start");
+ 	   curr_state_data->first_fix = TRUE;
+	}
 
 }
 
 void tolling_gnss_exit_state_running(TollingGnssSm* self)
 {
 	logdbg("Tolling GNSS exit state running");
-
-	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 }
 
 void tolling_gnss_stop(TollingGnssSm* self)
@@ -331,23 +338,23 @@ const gchar *convert_tolling_gnss_state_to_string(const TollingGnssStateId state
 
 void tolling_gnss_sm_stop(TollingGnssSm *self)
 {
+	loginfo("***** TRACKING APPLICATION STOP *****");
 	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	PositionData *position = PositioningServiceProxy_get_current_position(curr_state_data->positioning_service_proxy);
-	position->total_dist =  odometer_get_trip_distance(curr_state_data);
- 	JsonMapper* payload_json_mapper = MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"stop");
+	MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"stop");
  	curr_state_data->first_fix = FALSE;
-
+ 	PositioningServiceProxy_reset_last_pos_odom(curr_state_data->positioning_service_proxy);
 	self->states[self->curr_state_id]->actions->stop(self);
 }
 
 void tolling_gnss_sm_on_hold(TollingGnssSm *self)
 {
 
+	loginfo("***** TRACKING APPLICATION STOP *****");
 	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	PositionData *position = PositioningServiceProxy_get_current_position(curr_state_data->positioning_service_proxy);
-	position->total_dist =  odometer_get_trip_distance(curr_state_data);
-	JsonMapper* payload_json_mapper = MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"stop");
-
+	MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"stop");
+	PositioningServiceProxy_reset_last_pos_odom(curr_state_data->positioning_service_proxy);
 	self->states[self->curr_state_id]->actions->on_hold(self);
 
 }
@@ -436,12 +443,6 @@ static void tolling_gnss_sm_position_updated(gpointer gpointer_self)
 	PositionData *position = PositioningServiceProxy_get_current_position(curr_state_data->positioning_service_proxy);
 	self->states[self->curr_state_id]->actions->position_update(self, position);
 
-	//invio messaggio start
-	if(curr_state_data->first_fix == FALSE){
-		position->total_dist = 0.0;
- 	    JsonMapper* payload_json_mapper = MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"start");
- 	   curr_state_data->first_fix = TRUE;
-	}
 }
 
 /*

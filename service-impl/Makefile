@@ -17,34 +17,27 @@ SOURCES :=  tolling-gnss-sm.c \
 	    service_activation_sm.c \
 	    connection_sm.c \
 	    configuration_store.c \
-	    odometer.c \
-	    fix_and_status.c \
 	    gnss_fixes_transmission_queue.c \
 	    message_composer.c \
 	    tolling_manager_proxy.c \
 	    positioning_service_proxy.c \
 	    network_manager_proxy.c \
-	    icc_service_proxy.c \
-	    dsrc_service_proxy.c \
 	    application_events.c \
 	    application_notifications.c \
 	    events_logic.c \
-	    data_id_generator.c \
 	    gnss_fix_filter.c \
-	    axles_change_manager.c \
 	    tolling_gnss_core_default_factory.c \
-            dsrc_go_nogo_status.c \
-            gnss_fix_data.c  \
-            trip_id_manager.c \
-            tolling_application.c \
-            service_configuration.c \
-            application_message_composer.c \
-            application_gnss_fix_filter.c \
-            vas_activation_checker.c
+        gnss_fix_data.c  \
+        trip_id_manager.c \
+        tolling_application.c \
+        service_configuration.c \
+        application_message_composer.c \
+        application_gnss_fix_filter.c \
+        vas_activation_checker.c
 
 SUBDIRS := #tolling-gnss-core
 
-CPPFLAGS += -DGNSS_TOLLING_CFG=tolling-pl.cfg
+CPPFLAGS += -DGNSS_TOLLING_CFG=tracking-application.cfg
 
 HAS_CUSTOM_CONFIG := true
 WITH_JSON_MAPPER := true
