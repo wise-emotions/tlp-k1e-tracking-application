@@ -18,6 +18,7 @@ void add_custom_parameters()
 	sdv.sval = "";
 
 
+
 	Parameter* configuration_persistence_file = parameter_new(
 			CONFIGURATION_PERSISTENCE_PAR, "", "--configuration_persistence_file", pt_string,
 			CONFIGURATION_PERSISTENCE_RANGE, CONFIGURATION_PERSISTENCE_DESCR, sdv);
