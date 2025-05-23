@@ -682,17 +682,6 @@ EventsLogic *EventsLogic_initialize(EventsLogic *self,
         (ApplicationEvents_callback_type)EventsLogic_clear_all_anomalies,
         self);
 
-    ApplicationEvents_register_event_ex(
-        self->application_events,
-        EVENT_DSRC_SERVICE_PROXY_GO,
-        G_CALLBACK(EventsLogic_clean_up_managed_anomalies_set_by_others),
-        self, 1, G_TYPE_UINT);
-    ApplicationEvents_register_event_ex(
-        self->application_events,
-        EVENT_DSRC_SERVICE_PROXY_NOGO,
-        G_CALLBACK(EventsLogic_clean_up_managed_anomalies_set_by_others),
-        self, 1, G_TYPE_UINT);
-
 	ApplicationEvents_register_event(
 		self->application_events,
 		EVENT_POSITIONING_SERVICE_PROXY_POSITION_UPDATED,

@@ -17,7 +17,6 @@
 #include "positioning_service_proxy.h"
 #include "network_manager_proxy.h"
 #include "icc_service_proxy.h"
-#include "dsrc_service_proxy.h"
 #include "application_events.h"
 #include "application_notifications.h"
 #include "alarm_and_alert_notification_facade.h"
@@ -76,9 +75,6 @@ Tolling_Gnss_Sm_Data *Tolling_Gnss_Sm_Data_new(const DomainSpecificData *domain_
 
 	self->configuration_store = ConfigurationStore_new();
 	self->application_events = ApplicationEvents_new();
-    self->dsrc_service_proxy = DsrcServiceProxy_new(
-        self->configuration_store,
-        self->application_events);
 	self->positioning_service_proxy = PositioningServiceProxy_new(
 		self->configuration_store,
 		self->application_events);
@@ -124,7 +120,6 @@ void Tolling_Gnss_Sm_Data_destroy(Tolling_Gnss_Sm_Data *self)
 		PositioningServiceProxy_destroy(self->positioning_service_proxy);
 		NetworkManagerProxy_destroy(self->network_manager_proxy);
 		IccServiceProxy_destroy(self->icc_service_proxy);
-		DsrcServiceProxy_destroy(self->dsrc_service_proxy);
 		ConfigurationStore_destroy(self->configuration_store);
 		ApplicationEvents_destroy(self->application_events);
 		ApplicationNotifications_destroy(self->application_notifications);

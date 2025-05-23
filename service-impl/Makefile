@@ -25,7 +25,6 @@ SOURCES :=  tolling-gnss-sm.c \
 	    positioning_service_proxy.c \
 	    network_manager_proxy.c \
 	    icc_service_proxy.c \
-	    dsrc_service_proxy.c \
 	    application_events.c \
 	    application_notifications.c \
 	    events_logic.c \
