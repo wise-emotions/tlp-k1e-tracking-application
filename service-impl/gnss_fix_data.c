@@ -15,7 +15,6 @@
 #include "tolling_gnss_sm_data.h"
 #include "trip_id_manager.h"
 #include "tolling_manager_proxy.h"
-#include "icc_service_proxy.h"
 #include "fix_and_status.h"
 #include "trip_id_manager.h"
 #include "fix_data_json.h"

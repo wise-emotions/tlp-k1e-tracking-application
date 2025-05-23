@@ -16,7 +16,6 @@
 #include "tolling_manager_proxy.h"
 #include "positioning_service_proxy.h"
 #include "network_manager_proxy.h"
-#include "icc_service_proxy.h"
 #include "application_events.h"
 #include "application_notifications.h"
 #include "alarm_and_alert_notification_facade.h"
@@ -81,9 +80,6 @@ Tolling_Gnss_Sm_Data *Tolling_Gnss_Sm_Data_new(const DomainSpecificData *domain_
 	self->network_manager_proxy = NetworkManagerProxy_new(
 		self->configuration_store,
 		self->application_events);
-	self->icc_service_proxy = IccServiceProxy_new(
-		self->configuration_store,
-		self->application_events);
     self->tolling_manager_proxy = self->factory->create_tolling_manager_proxy(self->factory,
         domain_specific_data->gnss_domain_name,
         domain_specific_data->service_activation_domain_id,
@@ -119,7 +115,6 @@ void Tolling_Gnss_Sm_Data_destroy(Tolling_Gnss_Sm_Data *self)
         if (self->activation_checker) self->activation_checker->dtor(self->activation_checker);
 		PositioningServiceProxy_destroy(self->positioning_service_proxy);
 		NetworkManagerProxy_destroy(self->network_manager_proxy);
-		IccServiceProxy_destroy(self->icc_service_proxy);
 		ConfigurationStore_destroy(self->configuration_store);
 		ApplicationEvents_destroy(self->application_events);
 		ApplicationNotifications_destroy(self->application_notifications);

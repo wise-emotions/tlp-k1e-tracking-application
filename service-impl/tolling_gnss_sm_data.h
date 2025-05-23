@@ -20,7 +20,6 @@ typedef struct _TripIdManager TripIdManager;
 typedef struct _TollingManagerProxy TollingManagerProxy;
 typedef struct _PositioningServiceProxy PositioningServiceProxy;
 typedef struct _NetworkManagerProxy NetworkManagerProxy;
-typedef struct _IccServiceProxy IccServiceProxy;
 typedef struct _ApplicationEvents ApplicationEvents;
 typedef struct _ApplicationNotifications ApplicationNotifications;
 typedef struct _EventsLogic EventsLogic;
@@ -49,7 +48,6 @@ typedef struct _Tolling_Gnss_Sm_Data
 	TollingManagerProxy             *tolling_manager_proxy;
 	PositioningServiceProxy         *positioning_service_proxy;
 	NetworkManagerProxy             *network_manager_proxy;
-	IccServiceProxy                 *icc_service_proxy;
 	ApplicationEvents               *application_events;
 	ApplicationNotifications        *application_notifications;
 	EventsLogic                     *events_logic;
