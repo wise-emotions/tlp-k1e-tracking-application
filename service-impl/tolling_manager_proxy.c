@@ -693,14 +693,10 @@ void TollingManagerProxy_on_interface_available(
 {
 	logdbg("Interface '%s' is available from owner '%s'", name, name_owner);
 	TollingManagerProxy *self = (TollingManagerProxy*)gpointer_self;
-	TollingManagerProxy_get_initial_axles(self);
 	TollingManagerProxy_get_initial_vehicle_config(self);
 	TollingManagerProxy_get_initial_service_activation(self);
 	TollingManagerProxy_get_initial_activation_of_other_services(self);
 	TollingManagerProxy_get_initial_gnss_config(self);
-	TollingManagerProxy_get_initial_weight(self);
-	TollingManagerProxy_get_initial_actual_weight(self);
-	TollingManagerProxy_get_initial_trailer_type(self);
 	self->get_initial_gnss_domains(self);
 	TollingManagerProxy_get_initial_ccc_domains(self);
 

@@ -9,7 +9,7 @@
 #include "mqtt_client.h"
 
 #include "service_configuration.h"
-
+#include "json_mapper.h"
 #include "tolling_gnss_sm_data.h"
 
 #include "application_message_composer.h"
