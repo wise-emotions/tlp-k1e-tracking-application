@@ -113,7 +113,7 @@ JsonMapper *MessageComposer_create_fixdata_json_mapper_pos(PositionData fix)
 	return fixdata_json_mapper;
 }
 
-JsonMapper *MessageComposer_create_payload_json_mapper(MessageComposer *self, const GArray* fixes_to_send, const gchar* msg_type)
+JsonMapper *MessageComposer_create_payload_json_mapper(const MessageComposer *self, const GArray* fixes_to_send, const gchar* msg_type)
 {
 	//creating the message payload object with default properties
 	JsonMapper *payload_json_mapper = MessageComposer_create_payload(self, msg_type);
@@ -125,7 +125,7 @@ JsonMapper *MessageComposer_create_payload_json_mapper(MessageComposer *self, co
 	return payload_json_mapper;
 }
 
-JsonMapper *MessageComposer_create_payload_json_mapper_pos(MessageComposer *self, const PositionData fix, const gchar* msg_type)
+JsonMapper *MessageComposer_create_payload_json_mapper_pos(const MessageComposer *self, const PositionData fix, const gchar* msg_type)
 {
 	//creating the message payload object with default properties
 	JsonMapper *payload_json_mapper = MessageComposer_create_payload(self, msg_type);

@@ -19,6 +19,9 @@
 #include "application_notifications.h"
 #include "service_monitor.h"
 #include "connection_sm.h"
+#include "trip_id_manager.h"
+#include "odometer.h"
+#include "message_composer.h"
 
 #include "tolling-gnss-sm.h"
 
@@ -338,7 +341,7 @@ void tolling_gnss_sm_stop(TollingGnssSm *self)
 {
 	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	PositionData *position = PositioningServiceProxy_get_current_position(curr_state_data->positioning_service_proxy);
-	position->total_dist =  odometer_get_trip_distance(curr_state_data);
+	position->total_dist =  odometer_get_trip_distance(curr_state_data->odometer);
  	MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"stop");
  	curr_state_data->first_fix = FALSE;
 
@@ -350,7 +353,7 @@ void tolling_gnss_sm_on_hold(TollingGnssSm *self)
 
 	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	PositionData *position = PositioningServiceProxy_get_current_position(curr_state_data->positioning_service_proxy);
-	position->total_dist =  odometer_get_trip_distance(curr_state_data);
+	position->total_dist =  odometer_get_trip_distance(curr_state_data->odometer);
 	MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"stop");
 
 	self->states[self->curr_state_id]->actions->on_hold(self);

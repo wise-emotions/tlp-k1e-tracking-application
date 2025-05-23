@@ -14,7 +14,7 @@
 
 #include "application_message_composer.h"
 
-JsonMapper *MessageComposer_create_payload_json_mapper_pos(MessageComposer *self, const PositionData fix, const gchar* msg_type);
+JsonMapper *MessageComposer_create_payload_json_mapper_pos(const MessageComposer *self, const PositionData fix, const gchar* msg_type);
 
 
 
