@@ -432,26 +432,6 @@ static void EventsLogic_on_other_active_services_absent(gpointer gpointer_self)
 	return;
 }
 
-static void EventsLogic_clear_all_anomalies(EventsLogic *self)
-{
-	logdbg("");
-	if (self->is_network_anomaly_standing || self->is_gnss_anomaly_standing)
-	{
-		ApplicationEvents_emit_event(self->application_events, EVENT_EVENTS_LOGIC_GENERIC_ANOMALY_ABSENT);
-	}
-	if (self->is_network_anomaly_standing)
-	{
-		ApplicationEvents_emit_event(self->application_events, EVENT_EVENTS_LOGIC_NETWORK_ANOMALY_ABSENT);
-	}
-	if (self->is_gnss_anomaly_standing)
-	{
-		ApplicationEvents_emit_event(self->application_events, EVENT_EVENTS_LOGIC_GNSS_ANOMALY_ABSENT);
-	}
-	self->is_gnss_anomaly_standing = FALSE;
-	self->is_network_anomaly_standing = FALSE;
-	return;
-}
-
 static void EventsLogic_stop_all_anomaly_timers(EventsLogic *self)
 {
 	logdbg("");
@@ -476,7 +456,6 @@ void EventsLogic_on_exit_gnss_domain(gpointer gpointer_self)
 	// There should be no need to clear anomalies and stop timers here, as it's already done in function on_exit_ccc_domain;
 	// but if the OBU "teleports" outside of the polygons, it's possible this function is called before on_exit_ccc_domain,
 	// and that can lead to an inconsistency. Clearing everything here solves the problem.
-	EventsLogic_clear_all_anomalies(self);
 	EventsLogic_stop_all_anomaly_timers(self);
 	self->is_inside_gnss_domain = FALSE;
 	EventsLogic_update_service_status(self);
@@ -537,7 +516,6 @@ void EventsLogic_on_exit_ccc_domain(gpointer gpointer_self)
 {
 	logdbg("");
 	EventsLogic *self = (EventsLogic *)gpointer_self;
-	EventsLogic_clear_all_anomalies(self);
 	EventsLogic_stop_all_anomaly_timers(self);
 	self->is_inside_ccc_domain = FALSE;
 	EventsLogic_update_service_status(self);
@@ -674,12 +652,6 @@ EventsLogic *EventsLogic_initialize(EventsLogic *self,
         self->application_events,
         EVENT_TOLLING_GNSS_SM_ON_HOLD,
         (ApplicationEvents_callback_type)EventsLogic_on_sm_on_hold,
-        self);
-
-    ApplicationEvents_register_event(
-        self->application_events,
-        EVENT_TOLLING_GNSS_SM_ON_STOP,
-        (ApplicationEvents_callback_type)EventsLogic_clear_all_anomalies,
         self);
 
 	ApplicationEvents_register_event(
