@@ -15,7 +15,6 @@
 #include "tolling_gnss_sm_data.h"
 #include "trip_id_manager.h"
 #include "tolling_manager_proxy.h"
-#include "fix_and_status.h"
 #include "trip_id_manager.h"
 #include "fix_data_json.h"
 
@@ -23,15 +22,11 @@
 
 
 void gnss_fix_data_fill_remaining_fields(GnssFixData *fix_data, Tolling_Gnss_Sm_Data  *tolling_gnss_sm_data);
-void gnss_fix_data_fill_fix_and_status(GnssFixData *fix_data, Tolling_Gnss_Sm_Data *tolling_gnss_sm_data);
-void fix_and_status_data_to_json_mapper(const GnssFixData *self, JsonMapper *json_mapper);
-
 
 GnssFixData *gnss_fix_data_new(void)
 {
 	GnssFixData *self = (GnssFixData*)g_malloc0(sizeof(GnssFixData));
 	self->data_id = g_string_new("");
-	self->fix_and_status = fix_and_status_new();
 
 	return self;
 }
@@ -40,9 +35,6 @@ GnssFixData *gnss_fix_data_new(void)
 void gnss_fix_data_destroy(GnssFixData *self)
 {
 	if (self) {
-		if (self->fix_and_status) {
-			fix_and_status_destroy(self->fix_and_status);
-		}
 		if (self->data_id) {
 			g_string_free(self->data_id, TRUE);
 		}
@@ -64,7 +56,6 @@ gboolean gnss_fix_data_are_equal(const GnssFixData *first, const GnssFixData *se
 	                         first->accuracy             == second->accuracy             &&
 	                         first->gps_heading          == second->gps_heading          &&
 	                         first->satellites_for_fix   == second->satellites_for_fix   &&
-	fix_and_status_are_equal(first->fix_and_status,         second->fix_and_status)      &&
 	                         first->total_distance_m     == second->total_distance_m     &&
 	                         first->prg_trip             == second->prg_trip             &&
 	                         first->current_axis_trailer == second->current_axis_trailer &&
@@ -143,19 +134,6 @@ gdouble gnss_fix_data_get_odometer(const GnssFixData *fix_data)
 	return fix_data->total_distance_m;
 }
 
-gboolean gnss_fix_data_get_nogo(const GnssFixData *fix_data)
-{
-	return fix_data->fix_and_status->nogo;
-}
-
-void fix_and_status_data_to_json_mapper(const GnssFixData *self, JsonMapper *json_mapper)
-{
-	json_mapper_add_property(json_mapper, (const guchar*)JSON_TAMPERING,            json_type_boolean,      (const gpointer) &self->fix_and_status->tampering);
-	json_mapper_add_property(json_mapper, (const guchar*)JSON_NOGO,                 json_type_boolean,      (const gpointer) &self->fix_and_status->nogo);
-	json_mapper_add_property(json_mapper, (const guchar*)JSON_BLOCKED,              json_type_boolean,      (const gpointer) &self->fix_and_status->blocked);
-	json_mapper_add_property(json_mapper, (const guchar*)JSON_TOLLING_ELIGIBILITY,  json_type_boolean,      (const gpointer) &self->fix_and_status->tolling_eligibility);
-}
-
 void posdata_identifier_to_json_mapper(const GnssFixData *self, JsonMapper *json_mapper)
 {
 
@@ -198,9 +176,8 @@ JsonMapper *gnss_fix_data_to_json_mapper(const GnssFixData *self)
 
 	posdata_identifier_to_json_mapper(self, json_mapper);
 	position_data_to_json_mapper(self, json_mapper);
-//	fix_and_status_data_to_json_mapper(self, json_mapper);
 	computed_data_to_json_mapper(self, json_mapper);
-//	vehicle_data_to_json_mapper(self, json_mapper);
+
 	logdbg("json string (mapper)   : '%s'", json_mapper_to_string(json_mapper));
 
 	return json_mapper;

@@ -12,7 +12,6 @@
 
 #define KM_TO_M  1000.0
 
-typedef struct _FixAndStatus FixAndStatus;
 typedef struct _JsonMapper JsonMapper;
 
 
@@ -26,7 +25,6 @@ typedef struct _GnssFixData {
 	gdouble         accuracy;
 	gdouble         gps_heading;
 	guint           satellites_for_fix;
-	FixAndStatus   *fix_and_status;
 
 	gint            total_distance_m;
 	guint           prg_trip;

@@ -25,12 +25,6 @@
 #define JSON_FIX_TYPE                 "fix_type"
 #define JSON_SAT_FOR_FIX              "satellitesNumber"
 
-//fix and status
-#define JSON_TAMPERING                "tampering"
-#define JSON_NOGO                     "nogo"
-#define JSON_BLOCKED                  "blocked"
-#define JSON_TOLLING_ELIGIBILITY      "tolling_eligibility"
-
 #define JSON_ODOMETER                 "odometer_km"
 
 //vehicle
