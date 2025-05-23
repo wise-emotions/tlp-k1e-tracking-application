@@ -29,18 +29,15 @@ SOURCES :=  tolling-gnss-sm.c \
 	    application_events.c \
 	    application_notifications.c \
 	    events_logic.c \
-	    data_id_generator.c \
 	    gnss_fix_filter.c \
-	    axles_change_manager.c \
 	    tolling_gnss_core_default_factory.c \
-            dsrc_go_nogo_status.c \
-            gnss_fix_data.c  \
-            trip_id_manager.c \
-            tolling_application.c \
-            service_configuration.c \
-            application_message_composer.c \
-            application_gnss_fix_filter.c \
-            vas_activation_checker.c
+        gnss_fix_data.c  \
+        trip_id_manager.c \
+        tolling_application.c \
+        service_configuration.c \
+        application_message_composer.c \
+        application_gnss_fix_filter.c \
+        vas_activation_checker.c
 
 SUBDIRS := #tolling-gnss-core
 

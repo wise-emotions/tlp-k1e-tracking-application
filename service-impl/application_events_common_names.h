@@ -38,9 +38,5 @@
 #define EVENT_TOLLING_GNSS_SM_ON_HOLD                                   "tolling_gnss_sm_on_hold"
 #define EVENT_TOLLING_GNSS_SM_ON_STOP                                   "tolling_gnss_sm_on_stop"
 
-#define EVENT_AXLES_CHANGE_MANAGER_AXLES_CHANGE_REQUESTED               "AxlesChangeManager_axles_change_requested"
-#define EVENT_AXLES_CHANGE_MANAGER_AXLES_CHANGE_APPROVED                "AxlesChangeManager_axles_change_approved"
-#define EVENT_AXLES_CHANGE_MANAGER_AXLES_CHANGE_REJECTED                "AxlesChangeManager_axles_change_rejected"
-
 #define EVENT_GNSS_FIXES_CUT_OFF                                        "GnssFixesTrasmissionQueue_cut_off"
 

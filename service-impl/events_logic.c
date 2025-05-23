@@ -577,33 +577,6 @@ void EventsLogic_on_tolling_gnss_sm_start(gpointer gpointer_self)
 	return;
 }
 
-void EventsLogic_on_axles_change_requested(gpointer gpointer_self)
-{
-	logdbg("");
-	EventsLogic *self = (EventsLogic *)gpointer_self;
-	self->is_axles_config_approved = FALSE;
-	EventsLogic_update_service_status(self);
-	return;
-}
-
-void EventsLogic_on_axles_change_approved(gpointer gpointer_self)
-{
-	logdbg("");
-	EventsLogic *self = (EventsLogic *)gpointer_self;
-	self->is_axles_config_approved = TRUE;
-	EventsLogic_update_service_status(self);
-	return;
-}
-
-void EventsLogic_on_axles_change_rejected(gpointer gpointer_self)
-{
-	logdbg("");
-	EventsLogic *self = (EventsLogic *)gpointer_self;
-	self->is_axles_config_approved = FALSE;
-	EventsLogic_update_service_status(self);
-	return;
-}
-
 void EventsLogic_deallocate(EventsLogic *self)
 {
 	logdbg("");
@@ -794,21 +767,6 @@ EventsLogic *EventsLogic_initialize(EventsLogic *self,
 		self->application_events,
 		EVENT_TOLLING_GNSS_SM_ON_HOLD,
 		EventsLogic_on_tolling_gnss_sm_on_hold,
-		self);
-	ApplicationEvents_register_event(
-		self->application_events,
-		EVENT_AXLES_CHANGE_MANAGER_AXLES_CHANGE_REQUESTED,
-		EventsLogic_on_axles_change_requested,
-		self);
-	ApplicationEvents_register_event(
-		self->application_events,
-		EVENT_AXLES_CHANGE_MANAGER_AXLES_CHANGE_APPROVED,
-		EventsLogic_on_axles_change_approved,
-		self);
-	ApplicationEvents_register_event(
-		self->application_events,
-		EVENT_AXLES_CHANGE_MANAGER_AXLES_CHANGE_REJECTED,
-		EventsLogic_on_axles_change_rejected,
 		self);
 	return self;
 }

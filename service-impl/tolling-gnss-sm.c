@@ -19,7 +19,6 @@
 #include "application_notifications.h"
 #include "service_monitor.h"
 #include "connection_sm.h"
-#include "axles_change_manager.h"
 
 #include "tolling-gnss-sm.h"
 
@@ -115,8 +114,6 @@ void tolling_gnss_enter_state_running(TollingGnssSm* self)
 	ApplicationEvents_emit_event(curr_state_data->application_events, EVENT_TOLLING_GNSS_SM_START);
     service_activation_sm_start(curr_state_data->service_activation_sm);
 	trip_id_manager_generate_trip_id(curr_state_data->trip_id_manager,	curr_state_data->obu_id);
-	if(curr_state_data->axles_change_manager)
-		AxlesChangeManager_notify_last_axles_change(curr_state_data->axles_change_manager);
 
 	PositionData position = PositioningServiceProxy_get_last_position(curr_state_data->positioning_service_proxy);
 

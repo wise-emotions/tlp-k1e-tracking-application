@@ -241,9 +241,6 @@ GnssFixesTransmissionQueue_push(
 
         if (g_queue_get_length(self->priv->txq) < self->priv->max_queue_size) {
 
-            //data_id is generated only if current fix has to be really buffered
-            gnss_fix_data_fill_data_id(fix_data, self->priv->context);
-
             g_queue_push_head(self->priv->txq,fix_data);
 
             if ( (g_queue_get_length(self->priv->txq) % self->priv->max_packet_size) == 1 ) {

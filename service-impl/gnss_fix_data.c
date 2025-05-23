@@ -11,14 +11,12 @@
 #include "utils.h"
 #include "shared_types.h"
 
-#include "data_id_generator.h"
 #include "odometer.h"
 #include "tolling_gnss_sm_data.h"
 #include "trip_id_manager.h"
 #include "tolling_manager_proxy.h"
 #include "icc_service_proxy.h"
 #include "fix_and_status.h"
-#include "dsrc_go_nogo_status.h"
 #include "trip_id_manager.h"
 #include "fix_data_json.h"
 
@@ -101,32 +99,7 @@ void gnss_fix_data_copy_from_position_data(GnssFixData *fix_data, const Position
 	fix_data->vdop               = position->vdop;
 	fix_data->hdop               = position->hdop;
 
-	gnss_fix_data_fill_fix_and_status(fix_data, tolling_gnss_sm_data);
 	gnss_fix_data_fill_remaining_fields(fix_data, tolling_gnss_sm_data);
-
-}
-
-
-void gnss_fix_data_fill_fix_and_status(GnssFixData *fix_data, Tolling_Gnss_Sm_Data *tolling_gnss_sm_data)
-{
-	guint tampering_status;
-	IccServiceProxy_get_tampering_status(tolling_gnss_sm_data->icc_service_proxy, &tampering_status);
-	fix_data->fix_and_status->tampering = tampering_status;
-
-	GoNogo_t gonogo = DsrcGoNogoStatus_get_current_app_status(tolling_gnss_sm_data->dsrc_go_nogo_status);
-	if (gonogo == go) {
-		fix_data->fix_and_status->nogo = TRUE;
-	} else {
-		fix_data->fix_and_status->nogo = FALSE;
-	}
-
-	guint gonogo_flags = DsrcGoNogoStatus_get_current_dsrc_status_flags(tolling_gnss_sm_data->dsrc_go_nogo_status);
-	fix_data->fix_and_status->blocked = (gonogo_flags & (1 << ANOMALY_BLOCKED))? TRUE : FALSE;
-}
-
-void gnss_fix_data_fill_data_id(GnssFixData *fix_data, Tolling_Gnss_Sm_Data *tolling_gnss_sm_data){
-
-	g_string_printf(fix_data->data_id, "%d", DataIdGenerator_get_next_data_id_no_persist(tolling_gnss_sm_data->data_id_generator));
 
 }
 
@@ -140,7 +113,6 @@ void gnss_fix_data_fill_remaining_fields(GnssFixData *fix_data, Tolling_Gnss_Sm_
 	TollingManagerProxy_get_current_actual_weight(tolling_gnss_sm_data->tolling_manager_proxy, &fix_data->current_actual_weight);
         TollingManagerProxy_get_current_trailer_type(tolling_gnss_sm_data->tolling_manager_proxy,&fix_data->current_trailer_type);
 }
-
 
 guint64 gnss_fix_data_get_timestamp_in_milliseconds(const GnssFixData *fix_data)
 {
