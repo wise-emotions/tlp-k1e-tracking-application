@@ -120,7 +120,7 @@ void tolling_gnss_enter_state_running(TollingGnssSm* self)
 	//invio messaggio start
 	if(curr_state_data->first_fix == FALSE){
 		position.total_dist = 0.0;
- 	    JsonMapper* payload_json_mapper = MessageComposer_create_event_message_pos(curr_state_data->message_composer, position,"start");
+ 	    MessageComposer_create_event_message_pos(curr_state_data->message_composer, position,"start");
  	   curr_state_data->first_fix = TRUE;
 	}
 
@@ -129,8 +129,6 @@ void tolling_gnss_enter_state_running(TollingGnssSm* self)
 void tolling_gnss_exit_state_running(TollingGnssSm* self)
 {
 	logdbg("Tolling GNSS exit state running");
-
-	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 }
 
 void tolling_gnss_stop(TollingGnssSm* self)
@@ -341,7 +339,7 @@ void tolling_gnss_sm_stop(TollingGnssSm *self)
 	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	PositionData *position = PositioningServiceProxy_get_current_position(curr_state_data->positioning_service_proxy);
 	position->total_dist =  odometer_get_trip_distance(curr_state_data);
- 	JsonMapper* payload_json_mapper = MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"stop");
+ 	MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"stop");
  	curr_state_data->first_fix = FALSE;
 
 	self->states[self->curr_state_id]->actions->stop(self);
@@ -353,7 +351,7 @@ void tolling_gnss_sm_on_hold(TollingGnssSm *self)
 	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	PositionData *position = PositioningServiceProxy_get_current_position(curr_state_data->positioning_service_proxy);
 	position->total_dist =  odometer_get_trip_distance(curr_state_data);
-	JsonMapper* payload_json_mapper = MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"stop");
+	MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"stop");
 
 	self->states[self->curr_state_id]->actions->on_hold(self);
 
