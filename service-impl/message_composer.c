@@ -84,30 +84,31 @@ JsonMapper *MessageComposer_create_fixdata_json_mapper_pos(PositionData fix)
 
 	JsonMapper *fixdata_json_mapper = json_mapper_create((const guchar*)"[]");
 
-	loginfo("fix lat %f",fix.latitude);
+	if(fix.latitude != 0 && fix.longitude != 0){
 
-	fix_data.latitude           = fix.latitude;
-	fix_data.longitude          = fix.longitude;
-	fix_data.altitude           = fix.altitude;
+		fix_data.latitude           = fix.latitude;
+		fix_data.longitude          = fix.longitude;
+		fix_data.altitude           = fix.altitude;
 
-	fix_data.fix_time_epoch     = fix.date_time;
-	fix_data.gps_speed          = fix.speed;
+		fix_data.fix_time_epoch     = fix.date_time;
+		fix_data.gps_speed          = fix.speed;
 
-	fix_data.gps_heading        = fix.heading;
-	fix_data.satellites_for_fix = fix.sat_for_fix->len;
+		fix_data.gps_heading        = fix.heading;
+		fix_data.satellites_for_fix = fix.sat_for_fix->len;
 
-	fix_data.hdop               = fix.hdop;
-	fix_data.total_distance_m   = fix.total_dist*1000;
+		fix_data.hdop               = fix.hdop;
+		fix_data.total_distance_m   = fix.total_dist*1000;
 
-	JsonMapper *single_fix_json_mapper = gnss_fix_data_to_json_mapper(&fix_data);
-	json_mapper_add_mapper_to_array(fixdata_json_mapper, single_fix_json_mapper);
+		JsonMapper *single_fix_json_mapper = gnss_fix_data_to_json_mapper(&fix_data);
+		json_mapper_add_mapper_to_array(fixdata_json_mapper, single_fix_json_mapper);
 
-	json_mapper_destroy(single_fix_json_mapper);
+		json_mapper_destroy(single_fix_json_mapper);
 
 
-	//update monitor with latest nogo value
-	//if(fix_data != NULL)
-	service_monitor_update_metrics(&fix_data);
+		//update monitor with latest nogo value
+		//if(fix_data != NULL)
+		service_monitor_update_metrics(&fix_data);
+	}
 
 	return fixdata_json_mapper;
 }

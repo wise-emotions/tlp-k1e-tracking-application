@@ -114,8 +114,18 @@ void tolling_gnss_enter_state_running(TollingGnssSm* self)
     Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	ApplicationEvents_emit_event(curr_state_data->application_events, EVENT_TOLLING_GNSS_SM_START);
     service_activation_sm_start(curr_state_data->service_activation_sm);
+	trip_id_manager_generate_trip_id(curr_state_data->trip_id_manager,	curr_state_data->obu_id);
 	if(curr_state_data->axles_change_manager)
 		AxlesChangeManager_notify_last_axles_change(curr_state_data->axles_change_manager);
+
+	PositionData position = PositioningServiceProxy_get_last_position(curr_state_data->positioning_service_proxy);
+
+	//invio messaggio start
+	if(curr_state_data->first_fix == FALSE){
+		position.total_dist = 0.0;
+ 	    JsonMapper* payload_json_mapper = MessageComposer_create_event_message_pos(curr_state_data->message_composer, position,"start");
+ 	   curr_state_data->first_fix = TRUE;
+	}
 
 }
 
@@ -436,12 +446,6 @@ static void tolling_gnss_sm_position_updated(gpointer gpointer_self)
 	PositionData *position = PositioningServiceProxy_get_current_position(curr_state_data->positioning_service_proxy);
 	self->states[self->curr_state_id]->actions->position_update(self, position);
 
-	//invio messaggio start
-	if(curr_state_data->first_fix == FALSE){
-		position->total_dist = 0.0;
- 	    JsonMapper* payload_json_mapper = MessageComposer_create_event_message_pos(curr_state_data->message_composer, *position,"start");
- 	   curr_state_data->first_fix = TRUE;
-	}
 }
 
 /*

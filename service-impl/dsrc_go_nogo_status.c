@@ -72,20 +72,20 @@ void DsrcGoNogoStatus_destroy(DsrcGoNogoStatus *self)
 
 static void DsrcGoNogoStatus_set_go(gpointer gpointer_self, guint go_nogo_flags)
 {
-	DsrcGoNogoStatus *self = (DsrcGoNogoStatus *)gpointer_self;
+	/*DsrcGoNogoStatus *self = (DsrcGoNogoStatus *)gpointer_self;
 	self->dsrc_go_nogo_status = go;
 	self->dsrc_go_nogo_flags = go_nogo_flags;	
 	//logdbg("Fixes will be marked as 'go'");
-	DsrcGoNogoStatus_set_current_app_status(self);
+	DsrcGoNogoStatus_set_current_app_status(self);*/
 }
 
 static void DsrcGoNogoStatus_set_nogo(gpointer gpointer_self, guint go_nogo_flags)
 {
-	DsrcGoNogoStatus *self = (DsrcGoNogoStatus *)gpointer_self;
+	/*DsrcGoNogoStatus *self = (DsrcGoNogoStatus *)gpointer_self;
 	self->dsrc_go_nogo_status = nogo;
 	self->dsrc_go_nogo_flags = go_nogo_flags;	
 	//logdbg("Fixes will be marked as 'nogo'");
-	DsrcGoNogoStatus_set_current_app_status(self);
+	DsrcGoNogoStatus_set_current_app_status(self);*/
 }
 
 GoNogo_t DsrcGoNogoStatus_get_current_dsrc_status(const DsrcGoNogoStatus *self)

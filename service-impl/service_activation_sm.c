@@ -137,7 +137,6 @@ void service_activation_enter_state_active(ServiceActivationSm* self)
 	logdbg("Service activation enter state active");
 	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	odometer_reset(curr_state_data->odometer);
-	trip_id_manager_generate_trip_id(curr_state_data->trip_id_manager,	curr_state_data->obu_id);
 
 	GnssFixFilter_reset_last_fix(curr_state_data->gnss_fix_filter);
 
