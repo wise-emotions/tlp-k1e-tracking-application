@@ -99,7 +99,7 @@ JsonMapper *MessageComposer_create_fixdata_json_mapper_pos(PositionData fix)
 		fix_data.satellites_for_fix = fix.sat_for_fix->len;
 
 		fix_data.hdop               = fix.hdop;
-		fix_data.total_distance_m   = fix.total_dist*1000;
+		fix_data.total_distance_km  = fix.total_dist;
 
 		JsonMapper *single_fix_json_mapper = gnss_fix_data_to_json_mapper(&fix_data);
 		json_mapper_add_mapper_to_array(fixdata_json_mapper, single_fix_json_mapper);

@@ -91,7 +91,7 @@ void service_monitor_update_metrics(const GnssFixData * const latest_fix) {
 
 	if (gnss_activity.timer > 0) {
 
-	   gnss_activity.odometer = latest_fix->total_distance_m;
+	   gnss_activity.odometer = latest_fix->total_distance_km;
 	   gnss_activity.latest_mqtt_transmission_epoch_ms = gnss_fix_data_get_timestamp_in_milliseconds(latest_fix);
 	   gnss_activity.latest_nogo = 1;
    }

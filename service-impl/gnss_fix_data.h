@@ -26,7 +26,7 @@ typedef struct _GnssFixData {
 	gdouble         gps_heading;
 	guint           satellites_for_fix;
 
-	gint            total_distance_m;
+	gdouble         total_distance_km;
 	guint           prg_trip;
 
 	guint           current_actual_weight;

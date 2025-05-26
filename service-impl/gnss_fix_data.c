@@ -56,7 +56,7 @@ gboolean gnss_fix_data_are_equal(const GnssFixData *first, const GnssFixData *se
 	                         first->accuracy             == second->accuracy             &&
 	                         first->gps_heading          == second->gps_heading          &&
 	                         first->satellites_for_fix   == second->satellites_for_fix   &&
-	                         first->total_distance_m     == second->total_distance_m     &&
+	                         first->total_distance_km     == second->total_distance_km     &&
 	                         first->prg_trip             == second->prg_trip             &&
 	                         first->current_axis_trailer == second->current_axis_trailer &&
                              first->current_train_weight == second->current_train_weight &&
@@ -88,6 +88,7 @@ void gnss_fix_data_copy_from_position_data(GnssFixData *fix_data, const Position
 	fix_data->pdop               = position->pdop;
 	fix_data->vdop               = position->vdop;
 	fix_data->hdop               = position->hdop;
+    fix_data->total_distance_km   = position->total_dist;
 
 	gnss_fix_data_fill_remaining_fields(fix_data, tolling_gnss_sm_data);
 
@@ -96,7 +97,7 @@ void gnss_fix_data_copy_from_position_data(GnssFixData *fix_data, const Position
 void gnss_fix_data_fill_remaining_fields(GnssFixData *fix_data, Tolling_Gnss_Sm_Data *tolling_gnss_sm_data)
 {
 	//fix_data->prg_trip          = TripIdManager_get_current_trip_id(tolling_gnss_sm_data->trip_id_manager);
-	fix_data->total_distance_m  = (gint) (odometer_get_trip_distance(tolling_gnss_sm_data->odometer)* KM_TO_M);
+//	fix_data->total_distance_m  = (gint) (odometer_get_trip_distance(tolling_gnss_sm_data->odometer)* KM_TO_M);
 
 	TollingManagerProxy_get_current_axles(tolling_gnss_sm_data->tolling_manager_proxy, &fix_data->current_axis_trailer);
 	TollingManagerProxy_get_current_weight(tolling_gnss_sm_data->tolling_manager_proxy, &fix_data->current_train_weight);
@@ -131,7 +132,7 @@ gdouble gnss_fix_data_get_heading(const GnssFixData *fix_data)
 
 gdouble gnss_fix_data_get_odometer(const GnssFixData *fix_data)
 {
-	return fix_data->total_distance_m;
+	return fix_data->total_distance_km;
 }
 
 void posdata_identifier_to_json_mapper(const GnssFixData *self, JsonMapper *json_mapper)
@@ -156,8 +157,8 @@ void position_data_to_json_mapper(const GnssFixData *self, JsonMapper *json_mapp
 
 void computed_data_to_json_mapper(const GnssFixData *self, JsonMapper *json_mapper)
 {
-	gdouble total = self->total_distance_m/1000.0;
-	json_mapper_add_property(json_mapper, (const guchar*)JSON_ODOMETER,     json_type_double,      (const gpointer)&total );
+
+	json_mapper_add_property(json_mapper, (const guchar*)JSON_ODOMETER,     json_type_double,      (const gpointer)&self->total_distance_km );
 }
 
 
