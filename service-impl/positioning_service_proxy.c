@@ -12,6 +12,9 @@
 
 #include "positioning_service_proxy.h"
 
+#define MILLISECOND_TO_HOUR 0.000000277777778
+#define MAX_SPEED 			200.0
+
 typedef struct _PositioningServiceProxy
 {
 	Position *dbus_proxy;
@@ -85,8 +88,38 @@ static void PositioningServiceProxy_on_position_update(
 	self->current_position.speed = arg_speed;
 	self->current_position.accuracy = arg_accuracy;
 	strncpy(self->current_position.gps_time, arg_gps_time, DATE_TIME_LEN);
+
+
+	gdouble delta_time = -1;
+
+	if(self->current_position.latitude != 0.0){
+		delta_time = ((gdouble)arg_date_time- (gdouble)self->current_position.date_time) * MILLISECOND_TO_HOUR;
+	}
+
+	//aggiorno l'offset odometrico se
+	//     - in caso di primo fix, oppure
+	//     - se il delta_time = 0 -> se non è disponibile un nuovo fix, oppure
+	//     - se l'aggiornamento odometrico è maggiore del teorico percorso nell'intervallo di tempo a 200kmh
+	if( delta_time != -1 || (self->current_position.latitude != 0.0 && arg_total_dist - self->current_position.total_dist  < MAX_SPEED * delta_time) || delta_time == 0.0){
+
+		double update_km = arg_total_dist - self->current_position.total_dist;
+		logdbg("update km %f ",(arg_total_dist -  self->current_position.total_dist) );
+
+		if (update_km > 1.e-14) {
+			self->current_position.total_dist += update_km;
+		} else {
+			logdbg("Nothing to add, update is negative or too small");
+		}
+
+	} else {
+		logwarn("Received a diverged odometer update (total dist: %f km, previous total dist: %f km) from pos-srv, going to discard it",arg_total_dist, self->current_position.total_dist);
+	}
+
 	self->current_position.date_time = arg_date_time;
-	self->current_position.total_dist = arg_total_dist;
+
+
+
+
 	ApplicationEvents_emit_event(self->application_events, EVENT_POSITIONING_SERVICE_PROXY_POSITION_UPDATED);
 }
 
@@ -205,6 +238,10 @@ PositionData PositioningServiceProxy_get_last_position(PositioningServiceProxy *
 	return fix;
 }
 
+PositionData PositioningServiceProxy_reset_last_pos_odom(PositioningServiceProxy *self){
+
+	self->current_position.total_dist = 0;
+}
 
 PositioningServiceProxy *PositioningServiceProxy_new(ConfigurationStore *configuration_store, ApplicationEvents *application_events)
 {
