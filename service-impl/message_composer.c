@@ -53,6 +53,8 @@ JsonMapper *MessageComposer_create_payload(const MessageComposer *self, const gc
 	GString *create_time = date_time_now_utc_to_iso8601(); // milliseconds
     json_mapper_add_property(payload_json_mapper, (const guchar*)"eventTimestamp",         json_type_string,   (const gpointer) create_time->str);
 
+    json_mapper_add_property(payload_json_mapper, (const guchar*)"messageTimestamp",        json_type_string,   (const gpointer) create_time->str);
+
 	return payload_json_mapper;
 }
 
