@@ -20,7 +20,6 @@
 #include "service_monitor.h"
 #include "connection_sm.h"
 #include "trip_id_manager.h"
-#include "odometer.h"
 #include "message_composer.h"
 
 #include "tolling-gnss-sm.h"

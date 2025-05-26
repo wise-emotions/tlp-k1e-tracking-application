@@ -8,7 +8,6 @@
 
 #include "tolling-gnss-sm.h"
 #include "configuration_store.h"
-#include "odometer.h"
 #include "trip_id_manager.h"
 #include "gnss_fixes_transmission_queue.h"
 #include "domain_specific_data.h"
@@ -98,7 +97,6 @@ Tolling_Gnss_Sm_Data *Tolling_Gnss_Sm_Data_new(const DomainSpecificData *domain_
 		self->application_notifications);
 
 	self->trip_id_manager = trip_id_manager_create();
-	self->odometer = odometer_new();
 	self->tolling_gnss_sm = tolling_gnss_sm_new(self);
 	self->obu_id = g_string_new("");
 
@@ -120,7 +118,6 @@ void Tolling_Gnss_Sm_Data_destroy(Tolling_Gnss_Sm_Data *self)
 		ApplicationNotifications_destroy(self->application_notifications);
 		AlarmAndAlertNotificationFacade_destroy(self->alarm_and_alert_notification_facade);
 		EventsLogic_delete(self->events_logic);
-		odometer_destroy(self->odometer);
 		trip_id_manager_destroy(self->trip_id_manager);
 		mqtt_client_deinit(self->mqtt_client);
 		mqtt_client_destroy(self->mqtt_client);

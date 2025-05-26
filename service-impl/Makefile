@@ -17,7 +17,6 @@ SOURCES :=  tolling-gnss-sm.c \
 	    service_activation_sm.c \
 	    connection_sm.c \
 	    configuration_store.c \
-	    odometer.c \
 	    gnss_fixes_transmission_queue.c \
 	    message_composer.c \
 	    tolling_manager_proxy.c \

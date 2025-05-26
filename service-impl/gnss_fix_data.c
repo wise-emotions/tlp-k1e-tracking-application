@@ -10,8 +10,6 @@
 #include "json_mapper.h"
 #include "utils.h"
 #include "shared_types.h"
-
-#include "odometer.h"
 #include "tolling_gnss_sm_data.h"
 #include "trip_id_manager.h"
 #include "tolling_manager_proxy.h"
@@ -96,13 +94,11 @@ void gnss_fix_data_copy_from_position_data(GnssFixData *fix_data, const Position
 
 void gnss_fix_data_fill_remaining_fields(GnssFixData *fix_data, Tolling_Gnss_Sm_Data *tolling_gnss_sm_data)
 {
-	//fix_data->prg_trip          = TripIdManager_get_current_trip_id(tolling_gnss_sm_data->trip_id_manager);
-//	fix_data->total_distance_m  = (gint) (odometer_get_trip_distance(tolling_gnss_sm_data->odometer)* KM_TO_M);
 
 	TollingManagerProxy_get_current_axles(tolling_gnss_sm_data->tolling_manager_proxy, &fix_data->current_axis_trailer);
 	TollingManagerProxy_get_current_weight(tolling_gnss_sm_data->tolling_manager_proxy, &fix_data->current_train_weight);
 	TollingManagerProxy_get_current_actual_weight(tolling_gnss_sm_data->tolling_manager_proxy, &fix_data->current_actual_weight);
-        TollingManagerProxy_get_current_trailer_type(tolling_gnss_sm_data->tolling_manager_proxy,&fix_data->current_trailer_type);
+    TollingManagerProxy_get_current_trailer_type(tolling_gnss_sm_data->tolling_manager_proxy,&fix_data->current_trailer_type);
 }
 
 guint64 gnss_fix_data_get_timestamp_in_milliseconds(const GnssFixData *fix_data)

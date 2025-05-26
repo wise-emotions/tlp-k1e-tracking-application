@@ -13,7 +13,6 @@ typedef struct _GnssFixesTransmissionQueue GnssFixesTrasmissionQueue;
 typedef struct _GnssFixFilter GnssFixFilter;
 typedef struct _MessageComposer MessageComposer;
 typedef struct _ConnectionSm ConnectionSm;
-typedef struct _Odometer Odometer;
 typedef struct _ConfigurationStore ConfigurationStore;
 typedef struct _Mqtt_Client Mqtt_Client;
 typedef struct _TripIdManager TripIdManager;
@@ -41,7 +40,6 @@ typedef struct _Tolling_Gnss_Sm_Data
 	GnssFixesTrasmissionQueue       *gnss_fixes_transmision_queue;
 	GnssFixFilter                   *gnss_fix_filter;
 	MessageComposer                 *message_composer;
-	Odometer                        *odometer;
 	ConfigurationStore              *configuration_store;
 	Mqtt_Client                     *mqtt_client;
 	TripIdManager                   *trip_id_manager;
