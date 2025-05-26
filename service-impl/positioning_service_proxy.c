@@ -183,6 +183,8 @@ PositionData PositioningServiceProxy_get_last_position(PositioningServiceProxy *
 
 		if (error != NULL) {
 			if (error->code == 2) {
+
+				fix = self->current_position;
 				logdbg("\terror: %d - %s", error->code, error->message);
 			} else {
 				logerr("\terror: %d - %s", error->code, error->message);
@@ -191,6 +193,12 @@ PositionData PositioningServiceProxy_get_last_position(PositioningServiceProxy *
 		} else {
 			logerr("Unknown error getting fix from Positioning service");
 		}
+
+	}
+
+	if(fix.latitude == 0 && fix.longitude == 0 ){
+
+		fix = self->current_position;
 
 	}
 

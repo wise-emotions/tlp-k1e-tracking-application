@@ -54,7 +54,7 @@ static gboolean no_service_active(EventsLogic *self)
 
 static gboolean properly_configured(EventsLogic *self)
 {
-	return self->is_service_configured && self->is_vehicle_configured && self->is_axles_config_approved;
+	return self->is_service_configured && self->is_vehicle_configured;
 }
 
 static gboolean EventsLogic_service_active_inside_its_ccc_domain(EventsLogic *self) {
@@ -95,15 +95,13 @@ void EventsLogic_check_service_status(EventsLogic *self)
 {
 	loginfo(
 		"is_inside_gnss_domain = %d, is_inside_ccc_domain = %d, "
-		"is_service_active = %d, is_another_service_on_shared_domain_active = %d, "
-		"is_service_configured = %d, is_vehicle_configured  = %d, is_axles_config_approved = %d",
+		"is_service_active = %d, "
+		"is_service_configured = %d, is_vehicle_configured  = %d",
 		self->is_inside_gnss_domain,
 		self->is_inside_ccc_domain,
 		self->is_service_active,
-		self->is_another_service_on_shared_domain_active,
 		self->is_service_configured,
-		self->is_vehicle_configured,
-		self->is_axles_config_approved);
+		self->is_vehicle_configured);
 	return;
 }
 

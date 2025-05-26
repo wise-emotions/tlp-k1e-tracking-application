@@ -57,7 +57,7 @@ GString *MessageComposer_create_event_message_pos(const MessageComposer *self, c
 	JsonMapper *payload_json_mapper = MessageComposer_create_payload_json_mapper_pos(self, fix, msg_type);
 
 	GString *json_string = g_string_new(json_mapper_to_string(payload_json_mapper));
-	loginfo("\n %s \n %s",msg_type, json_string->str);
+
 	mqtt_client_publish_message_on_topic_from_param(self->tolling_gnss_sm_data->mqtt_client, json_string->str, MQTT_EVENTS_TOPIC_PAR);
     g_string_free(json_string, TRUE);
 

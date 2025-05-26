@@ -112,7 +112,7 @@ void tolling_gnss_exit_state_on_hold(TollingGnssSm* self)
 void tolling_gnss_enter_state_running(TollingGnssSm* self)
 {
 	logdbg("Tolling GNSS enter state running");
-
+	loginfo("***** TRACKING APPLICATION START *****");
     Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	ApplicationEvents_emit_event(curr_state_data->application_events, EVENT_TOLLING_GNSS_SM_START);
     service_activation_sm_start(curr_state_data->service_activation_sm);
@@ -339,6 +339,7 @@ const gchar *convert_tolling_gnss_state_to_string(const TollingGnssStateId state
 
 void tolling_gnss_sm_stop(TollingGnssSm *self)
 {
+	loginfo("***** TRACKING APPLICATION STOP *****");
 	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	PositionData *position = PositioningServiceProxy_get_current_position(curr_state_data->positioning_service_proxy);
 	position->total_dist =  odometer_get_trip_distance(curr_state_data->odometer);
@@ -351,6 +352,7 @@ void tolling_gnss_sm_stop(TollingGnssSm *self)
 void tolling_gnss_sm_on_hold(TollingGnssSm *self)
 {
 
+	loginfo("***** TRACKING APPLICATION STOP *****");
 	Tolling_Gnss_Sm_Data *curr_state_data = (Tolling_Gnss_Sm_Data*)(self->states[self->curr_state_id]->data);
 	PositionData *position = PositioningServiceProxy_get_current_position(curr_state_data->positioning_service_proxy);
 	position->total_dist =  odometer_get_trip_distance(curr_state_data->odometer);
