@@ -40,7 +40,7 @@ JsonMapper *MessageComposer_create_payload(const MessageComposer *self, const gc
 {
 	JsonMapper *payload_json_mapper = json_mapper_create((const guchar*)"{}");
 
-	json_mapper_add_property(payload_json_mapper, (const guchar*)"trip_id",     json_type_string, (const gpointer) trip_id_manager_get_trip_id(self->tolling_gnss_sm_data->trip_id_manager)->str);
+	json_mapper_add_property(payload_json_mapper, (const guchar*)"tripId",     json_type_string, (const gpointer) trip_id_manager_get_trip_id(self->tolling_gnss_sm_data->trip_id_manager)->str);
 
 	json_mapper_add_property(payload_json_mapper, (const guchar*)"messageType",     json_type_string, (const gpointer) msg_type);
 

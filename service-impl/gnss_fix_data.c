@@ -18,6 +18,7 @@
 
 #include "gnss_fix_data.h"
 
+#define MILLI_SECONDS_PER_SECOND 1000
 
 void gnss_fix_data_fill_remaining_fields(GnssFixData *fix_data, Tolling_Gnss_Sm_Data  *tolling_gnss_sm_data);
 
@@ -134,7 +135,7 @@ gdouble gnss_fix_data_get_odometer(const GnssFixData *fix_data)
 void posdata_identifier_to_json_mapper(const GnssFixData *self, JsonMapper *json_mapper)
 {
 
-	GString *create_time = date_time_unix_utc_to_iso8601_ms(self->fix_time_epoch); // milliseconds
+	GString *create_time = date_time_unix_utc_to_iso8601(self->fix_time_epoch/MILLI_SECONDS_PER_SECOND); // milliseconds
 	json_mapper_add_property(json_mapper, (const guchar*)JSON_TIME,         json_type_string,   (const gpointer) create_time->str);
 	g_string_free(create_time, TRUE);
 }
