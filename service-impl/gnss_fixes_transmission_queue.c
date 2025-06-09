@@ -3,6 +3,7 @@
 #include "glib.h"
 #include "logger.h"
 #include "mqtt_client.h"
+#include "service_configuration.h"
 
 #include "gnss_fix_data.h"
 #include "message_composer.h"
@@ -15,10 +16,15 @@
 #include "openssl/md5.h"
 #include <string.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic pop
+
 
 #include "gnss_fixes_transmission_queue.h"
 
 #define FIX_SAVE_VERSION					  2
+#define NEXT_APPLICATION_FIXES_FILE_VERSION   1
 
 #define ESTIMATED_FIX_RATE                    1.05
 
@@ -44,6 +50,9 @@ struct _GnssFixesTransmissionQueuePriv  {
     GQueue                              *txq;
     guint                                max_queue_size;
     GString								*domain_name;
+
+    GQueue                              *next_leftover_txq;
+
 
     GThread                             *transmitter;
     gboolean                             terminate;
@@ -91,6 +100,7 @@ static void                             on_publish_completed(void *service, int 
 //static GByteArray*						GnssFixesTransmissionQueue_fix_serializer(GnssFixesTransmissionQueue *);
 static gboolean							GnssFixesTransmissionQueue_fix_writer(GnssFixesTransmissionQueue *);
 static gboolean 						GnssFixesTransimissionQueue_fix_reader(GnssFixesTransmissionQueue *self);
+static void                             GnssFixesTransimissionQueue_next_application_left_over_fixes_reader(GnssFixesTransmissionQueue *self);
 
 GnssFixesTransmissionQueue *
 GnssFixesTransmissionQueue_new()
@@ -133,7 +143,10 @@ GnssFixesTransmissionQueue_ctor(
     self->priv->terminate = FALSE;
     self->priv->txq       = g_queue_new();
     self->priv->domain_name = g_string_new(domain_name);
+    self->priv->next_leftover_txq = g_queue_new();
+
     g_rec_mutex_lock(&mutex);
+        GnssFixesTransimissionQueue_next_application_left_over_fixes_reader(self);
     	GnssFixesTransimissionQueue_fix_reader(self);
     g_rec_mutex_unlock(&mutex);
     self->priv->cut_off = TRUE;
@@ -192,6 +205,7 @@ GnssFixesTransmissionQueue_dtor(
     loginfo("terminated");
 
     g_queue_free_full(self->priv->txq, (GDestroyNotify)gnss_fix_data_destroy);
+    g_queue_free_full(self->priv->next_leftover_txq, (GDestroyNotify)g_free);
     g_string_free(self->priv->domain_name, TRUE);
     g_free(self->priv);
     g_free(self);
@@ -377,6 +391,19 @@ GnssFixesTransmissionQueue_worker_thread(
             continue;
         }
 
+
+        if(g_queue_get_length(self->priv->next_leftover_txq) > 0) {
+            char *payload = g_queue_pop_head(self->priv->next_leftover_txq);
+            mqtt_client_publish_message_on_topic_from_param(
+                self->priv->context->mqtt_client,
+                payload,
+                MQTT_TRACKING_TOPIC_PAR
+            );
+            g_free(payload);
+            g_rec_mutex_unlock(&mutex);
+            continue;
+        }
+
         if ((txq_length = g_queue_get_length(self->priv->txq)) > 0) {
             now = g_get_real_time();
 
@@ -508,6 +535,10 @@ on_publish_completed(void *service, int message_id)
 		CHECK_LEN_WRITE(__VAR__,__TYPE__,__NUM__,__FILE__,__LABEL__)\
 		MD5_Update(__MD5_CONTEXT__, __VAR__, __NUM__*sizeof(__TYPE__));\
 	}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 static gboolean GnssFixesTransmissionQueue_fix_writer(GnssFixesTransmissionQueue *self){
 	//TODO:obtain app_name
 	guint queue_len = g_queue_get_length(self->priv->txq);
@@ -662,3 +693,88 @@ static gboolean GnssFixesTransimissionQueue_fix_reader(GnssFixesTransmissionQueu
 
 }
 
+static void GnssFixesTransimissionQueue_next_application_left_over_fixes_reader(GnssFixesTransmissionQueue *self)
+{
+    gboolean return_value = FALSE;
+
+    GString *resource_id_str = g_string_new("next-application");
+    resource_id_str = g_string_append(resource_id_str,".fix");
+
+    GString *resource_id_hash_str = g_string_new("next-application");
+    resource_id_hash_str = g_string_append(resource_id_hash_str,".hash");
+
+    gchar *resource_id = resource_id_str->str;
+    gchar *resource_id_hash = resource_id_hash_str->str;
+
+
+    FILE *to_read = rm_get_resource_as_file(RM_FIXES_PATH, resource_id,"r");
+    FILE *to_read_hash = rm_get_resource_as_file(RM_FIXES_PATH, resource_id_hash,"r");
+
+    if (to_read == NULL || to_read_hash == NULL)
+        goto closing;
+
+    MD5_CTX md5_context;
+    guchar md5_digest[MD5_DIGEST_LENGTH],md5_digest_read[MD5_DIGEST_LENGTH];
+    CHECK_LEN_READ(md5_digest_read,guchar,MD5_DIGEST_LENGTH,to_read_hash,closing);
+
+    MD5_Init(&md5_context);
+
+    guint version = 0;
+    CHECK_LEN_READ_DIGEST(&version,guint,1,to_read,closing,&md5_context);
+
+    if (version != NEXT_APPLICATION_FIXES_FILE_VERSION){
+        logerr(
+            "re-loading next-application left over fixes aborted: unsupported file version %d (expected %d)",
+            version,
+            NEXT_APPLICATION_FIXES_FILE_VERSION
+        );
+        goto closing;
+    }
+
+    guint num_of_messages;
+    CHECK_LEN_READ_DIGEST(&num_of_messages,guint,1,to_read,closing,&md5_context);
+
+    for (int i=0;i<num_of_messages;i++){
+
+        guint serialized_message_size = 0;
+        CHECK_LEN_READ_DIGEST(&serialized_message_size,guint,1,to_read,closing,&md5_context);
+
+        guchar *serialized_message = (guchar*)g_malloc0(serialized_message_size*sizeof(guchar));
+        CHECK_LEN_READ_DIGEST(serialized_message,guchar,serialized_message_size,to_read,closing,&md5_context);
+
+        guchar *ptr = serialized_message;
+
+        guint payload_len;
+        memcpy(&payload_len,ptr,sizeof(guint));
+        ptr+=sizeof(guint);
+
+        char *payload = g_malloc0(payload_len+1);
+        memcpy(payload, ptr, payload_len);
+        payload[payload_len] = '\0';
+
+        g_queue_push_tail(self->priv->next_leftover_txq, payload);
+
+        g_free(serialized_message);
+    }
+
+    MD5_Final(md5_digest, &md5_context);
+    return_value = memcmp(md5_digest,md5_digest_read,MD5_DIGEST_LENGTH)==0;
+
+    if (return_value && num_of_messages) {
+        loginfo("next-application left over peristed messages loaded");
+    }
+
+
+closing:
+    if(!return_value){
+        loginfo("destroying left over next-aplication messages since the persisted file was probably corrupted");
+        g_queue_free_full(self->priv->next_leftover_txq, (GDestroyNotify)g_free);
+        self->priv->next_leftover_txq = g_queue_new();
+    }
+
+    CLOSE_AND_DELETE_FILE(to_read,resource_id);
+    CLOSE_AND_DELETE_FILE(to_read_hash,resource_id_hash);
+    g_string_free(resource_id_str,TRUE);
+    g_string_free(resource_id_hash_str, TRUE);
+}
+#pragma GCC diagnostic pop
