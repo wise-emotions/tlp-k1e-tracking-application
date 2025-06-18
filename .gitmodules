@@ -1,0 +1,3 @@
+[submodule "service-framework"]
+	path = service-framework
+	url = git@github.com:wise-emotions/tlp-k1e-service-framework.git
