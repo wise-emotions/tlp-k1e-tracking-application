@@ -483,7 +483,7 @@ on_publish_started(void *service, int message_id, const char *topic, int qos, in
 {
     GRegex *re = NULL;
     GMatchInfo *match = NULL;
-    re = g_regex_new("^com/telepass/k1/tolling/[^/][^/]/v\\d+/\\d+/posdata$",(GRegexCompileFlags)0, (GRegexMatchFlags)0, NULL);
+    re = g_regex_new("^com/telepass/k1/vas/next/v\\d+/\\d+/tracking$",(GRegexCompileFlags)0, (GRegexMatchFlags)0, NULL);
     if(g_regex_match_full(re, topic, -1, 0, (GRegexMatchFlags)0, &match, NULL)) {
         g_rec_mutex_lock(&mutex);
         pending_message = TRUE;

@@ -22,5 +22,15 @@
 #define MQTT_EVENTS_TOPIC_PAR_DESCR "MQTT topic for events"
 #define MQTT_EVENTS_TOPIC_PAR_RANGE NULL
 
+#define TRACKING_EVENTS_WAIT_CONFIRMATION_TIMEOUT_PAR         "tracking_event_wait_confirmation_timeout"
+#define TRACKING_EVENTS_WAIT_CONFIRMATION_TIMEOUT_PAR_DESCR   "tracking event wait confirmation timeout"
+#define TRACKING_EVENTS_WAIT_CONFIRMATION_TIMEOUT_PAR_DFLT    (default_val){.nval = 10}
+#define TRACKING_EVENTS_WAIT_CONFIRMATION_TIMEOUT_PAR_RANGE   "[0,]"
+
+extern gint           iparam(const gchar *name);
+extern gint           fparam(const gchar *name);
+extern gboolean       bparam(const gchar *name);
+extern const gchar   *sparam(const gchar *name);
+extern const gchar  **svparam(const gchar *name);
 
 void add_custom_parameters();

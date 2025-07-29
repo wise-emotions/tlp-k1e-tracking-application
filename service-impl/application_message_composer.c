@@ -11,8 +11,13 @@
 #include "service_configuration.h"
 #include "json_mapper.h"
 #include "tolling_gnss_sm_data.h"
+#include "tracking_event_sender.h"
 
 #include "application_message_composer.h"
+
+#define TRACKING_EVENT_WAIT_CONFIRM \
+    iparam(TRACKING_EVENTS_WAIT_CONFIRMATION_TIMEOUT_PAR)
+
 
 JsonMapper *MessageComposer_create_payload_json_mapper_pos(const MessageComposer *self, const PositionData fix, const gchar* msg_type);
 
@@ -51,21 +56,25 @@ GString *MessageComposer_create_event_message(const MessageComposer *self, const
 
 }
 
-GString *MessageComposer_create_event_message_pos(const MessageComposer *self, const PositionData fix, const gchar* msg_type)
+void MessageComposer_create_event_message_pos(const MessageComposer *self, const PositionData fix, const gchar* msg_type)
 {
 
 	JsonMapper *payload_json_mapper = MessageComposer_create_payload_json_mapper_pos(self, fix, msg_type);
 
 	GString *json_string = g_string_new(json_mapper_to_string(payload_json_mapper));
 
-	mqtt_client_publish_message_on_topic_from_param(self->tolling_gnss_sm_data->mqtt_client, json_string->str, MQTT_EVENTS_TOPIC_PAR);
+	gboolean confirmed = TrackingEventSender_send(
+        self->tolling_gnss_sm_data->mqtt_client,
+        json_string->str,
+        MQTT_EVENTS_TOPIC_PAR,
+        TRACKING_EVENT_WAIT_CONFIRM
+	);
+
+	if(!confirmed)
+	    logwarn("%s tracking event message not confirmed within %d seconds", msg_type, TRACKING_EVENT_WAIT_CONFIRM);
+
     g_string_free(json_string, TRUE);
-
-
 	json_mapper_destroy(payload_json_mapper);
-
-	return json_string;
-
 }
 
 
